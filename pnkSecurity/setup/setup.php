@@ -1,5 +1,15 @@
 <?php
 
+// VUL-17 (A05:2021 Configuración incorrecta): los errores no se muestran al cliente
+// (se registran en el servidor), evitando exponer rutas, consultas y stack traces de
+// MySQL. Se controla el reporte de errores de mysqli manualmente.
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+if (function_exists('mysqli_report')) {
+    mysqli_report(MYSQLI_REPORT_OFF);
+}
+
 // VUL-03 (A05:2021 Configuración incorrecta): las credenciales ya no están
 // hardcodeadas ni usan root sin contraseña; se cargan desde config/config.php
 // (variables de entorno) y se conecta con el usuario mínimo 'pnk_app'.
