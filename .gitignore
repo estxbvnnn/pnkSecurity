@@ -1,0 +1,18 @@
+# --- Secretos / credenciales (NO subir) ---
+GIT ACCOUNTS.txt
+pnkSecurity/config/config.php
+pnkSecurity/logs/*.log
+pnkSecurity/logs/*.json
+
+# --- Respaldos / copias / sueltos (no parte del repo) ---
+*.rar
+EV2.jpeg
+pnkSecurity_vulnerable/
+pnkSecurityyy/
+pnkSecurity_bs5_backup/
+
+# --- Informes generados (fuera del repo de código) ---
+INFORME_CORRECCIONES.docx
+INFORME_CORRECCIONES.pdf
+INFORME_REMEDIACION.md
+LEEME_PRIMERO.md
