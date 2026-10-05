@@ -3,6 +3,9 @@
 include("setup/setup.php");
 session_start();
 
+// VUL-14 (A01:2021 CSRF): toda operación del carrito requiere un token válido.
+csrf_validar();
+
 switch($_POST['op'])
 {
     case "1": insertar();

@@ -3,6 +3,9 @@
 include("setup/setup.php");
 session_start();
 
+// VUL-14 (A01:2021 CSRF): token obligatorio en el POST de comentarios.
+csrf_validar();
+
 // VUL-13 (A01:2021 Control de acceso / IDOR): solo usuarios autenticados pueden
 // comentar; un POST directo sin sesión se rechaza con 403 Forbidden.
 if (!isset($_SESSION['nombre'])) {

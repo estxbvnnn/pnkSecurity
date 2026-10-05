@@ -71,6 +71,31 @@ function e($valor)
     return htmlspecialchars((string) ($valor ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+// VUL-14 (A01:2021 CSRF): token por sesión; se incrusta en formularios y se envía
+// en las peticiones AJAX, y se valida en cada POST con hash_equals().
+function csrf_token()
+{
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function csrf_field()
+{
+    return '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
+}
+
+function csrf_validar()
+{
+    $enviado = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!is_string($enviado) || empty($_SESSION['csrf_token'])
+        || !hash_equals($_SESSION['csrf_token'], $enviado)) {
+        http_response_code(403);
+        exit('Token CSRF inválido o ausente.');
+    }
+}
+
 function quitarespacios($titulo)
 {
     $titulo =str_replace(" ", "", $titulo);

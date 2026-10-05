@@ -1,6 +1,10 @@
 <?php
 
 include("setup.php");
+session_start();
+
+// VUL-14 (A01:2021 CSRF): se valida el token de la petición antes de procesar el login.
+csrf_validar();
 
 // VUL-01 (A03:2021 Inyección SQL): se reemplaza la concatenación por una
 // consulta preparada con parámetros enlazados. Así, entradas como
@@ -19,7 +23,6 @@ $datos  = mysqli_fetch_array($result);
 // password_verify(); nunca se compara ni se almacena en texto plano.
 if ($datos && password_verify($password, $datos['password']))
 {
-    session_start();
     $_SESSION['nombre'] = $datos['nombre'];
     header('Location:../index.php');
 } else {
