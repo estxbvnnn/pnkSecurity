@@ -19,6 +19,18 @@ require_once __DIR__ . '/../config/config.php';
 // comienzo, de forma centralizada. Se eliminan los session_start() dispersos y
 // tardíos de cada página.
 if (session_status() === PHP_SESSION_NONE) {
+    // VUL-18 (A05:2021 Configuración incorrecta): cookie de sesión endurecida
+    // (HttpOnly + SameSite=Strict + Secure bajo HTTPS) para dificultar el robo de
+    // sesión vía XSS/CSRF.
+    $cookieSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'httponly' => true,
+        'secure'   => $cookieSecure,
+        'samesite' => 'Strict',
+    ]);
+    session_name('PNKSESID');
     session_start();
 }
 
