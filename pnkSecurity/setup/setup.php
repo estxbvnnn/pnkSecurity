@@ -8,6 +8,11 @@ require_once __DIR__ . '/../config/config.php';
 function conectar()
 {
     $con = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+    // VUL-12 (A03:2021 XSS desde BD): conexión en utf8mb4 para mostrar acentos sin
+    // utf8_encode(); la salida se escapa con e() en lugar de imprimirse en crudo.
+    if ($con) {
+        mysqli_set_charset($con, 'utf8mb4');
+    }
     return $con;
 }
 
