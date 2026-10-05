@@ -1,8 +1,13 @@
 <?php
 
+// VUL-03 (A05:2021 Configuración incorrecta): las credenciales ya no están
+// hardcodeadas ni usan root sin contraseña; se cargan desde config/config.php
+// (variables de entorno) y se conecta con el usuario mínimo 'pnk_app'.
+require_once __DIR__ . '/../config/config.php';
+
 function conectar()
 {
-    $con=mysqli_connect("localhost","root","","pnk_security");
+    $con = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
     return $con;
 }
 

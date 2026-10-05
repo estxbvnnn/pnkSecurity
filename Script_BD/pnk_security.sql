@@ -173,3 +173,15 @@ CREATE TABLE `usuarios` (
 INSERT INTO `usuarios` VALUES
  (1,'Administrador','admin@gmail.com','$2y$12$T3HiYN6bhLwSVhaCnkh4o.dca8Vm5kkV7PbKVJyx1B/RJtnVRSe4.','1'),
  (2,'Alondra','alondra@gmail.com','$2y$12$MZGpJRHLrjc8XYzzvksTge3N6yelm9r1d.InQVbQSCxyESqcvj4Ka','1');
+
+# =====================================================================
+# VUL-03 (A05:2021): usuario de aplicación con privilegios mínimos,
+# en reemplazo de 'root' sin contraseña. Ajuste la clave y manténgala
+# fuera del código (variables de entorno).
+# =====================================================================
+DROP USER IF EXISTS 'pnk_app'@'localhost';
+CREATE USER 'pnk_app'@'localhost' IDENTIFIED BY 'Cambia_Esta_Clave_pnk_2026!';
+GRANT SELECT ON `pnk_security`.* TO 'pnk_app'@'localhost';
+GRANT INSERT ON `pnk_security`.`comentarios` TO 'pnk_app'@'localhost';
+GRANT UPDATE (`password`) ON `pnk_security`.`usuarios` TO 'pnk_app'@'localhost';
+FLUSH PRIVILEGES;
