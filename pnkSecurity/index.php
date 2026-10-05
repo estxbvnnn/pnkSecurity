@@ -4,13 +4,20 @@ include("setup/setup.php");
 session_start();
 
 mysqli_set_charset(conectar(), 'utf8');
-$key=$_GET['id'];
+// VUL-04 (A03:2021 Inyección SQL, boolean-based): el parámetro id se valida como
+// entero y la consulta del restaurante pasa a ser preparada (db_select).
+$key=id_valido($_GET['id'] ?? null);
 $_SESSION['id']=$_GET['id'];
 
-$sql_restorant="SELECT direcciones.calle, direcciones.numero, direcciones.comuna, direcciones.region, restautantes.nombre, restautantes.id, restautantes.fono, restautantes.email, restautantes.foto FROM restautantes INNER JOIN direcciones ON restautantes.direcciones_id =
-direcciones.id WHERE restautantes.id = ".$key." AND restautantes.eliminado IS NULL";
-$result_restorant=mysqli_query(conectar(),$sql_restorant);
-$datos_restorant=mysqli_fetch_array($result_restorant);
+$datos_restorant = [];
+if ($key !== null) {
+    $filas_restorant = db_select(
+        "SELECT direcciones.calle, direcciones.numero, direcciones.comuna, direcciones.region, restautantes.nombre, restautantes.id, restautantes.fono, restautantes.email, restautantes.foto FROM restautantes INNER JOIN direcciones ON restautantes.direcciones_id = direcciones.id WHERE restautantes.id = ? AND restautantes.eliminado IS NULL",
+        "i",
+        [$key]
+    );
+    $datos_restorant = $filas_restorant[0] ?? [];
+}
 
 
 

@@ -11,6 +11,37 @@ function conectar()
     return $con;
 }
 
+// VUL-04/05 (A03:2021 Inyección SQL): validación de identificadores y helper de
+// consultas preparadas, para no concatenar datos del usuario en el SQL.
+function id_valido($valor)
+{
+    if ($valor === null || $valor === '') {
+        return null;
+    }
+    $i = filter_var($valor, FILTER_VALIDATE_INT);
+    return ($i === false || $i <= 0) ? null : (int) $i;
+}
+
+function db_select($sql, $types = '', $params = [])
+{
+    $con  = conectar();
+    $stmt = mysqli_prepare($con, $sql);
+    if ($stmt === false) {
+        return [];
+    }
+    if ($types !== '') {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    if (!mysqli_stmt_execute($stmt)) {
+        mysqli_stmt_close($stmt);
+        return [];
+    }
+    $res  = mysqli_stmt_get_result($stmt);
+    $rows = $res ? mysqli_fetch_all($res, MYSQLI_ASSOC) : [];
+    mysqli_stmt_close($stmt);
+    return $rows;
+}
+
 function quitarespacios($titulo)
 {
     $titulo =str_replace(" ", "", $titulo);
