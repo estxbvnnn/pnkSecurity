@@ -1,0 +1,31 @@
+# VUL-19 (A05:2021): endurecimiento a nivel de servidor (defensa en profundidad).
+Options -Indexes
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "DENY"
+  Header set Referrer-Policy "no-referrer"
+  Header always unset X-Powered-By
+</IfModule>
+
+# Bloquear acceso directo a archivos sensibles.
+<FilesMatch "\.(sql|log|json|ini|sample|md)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Bloquear archivos ocultos (.git, .env, etc.).
+<FilesMatch "^\.">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

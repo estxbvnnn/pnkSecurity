@@ -10,6 +10,17 @@ if (function_exists('mysqli_report')) {
     mysqli_report(MYSQLI_REPORT_OFF);
 }
 
+// VUL-19 (A05:2021 Configuración incorrecta): cabeceras de seguridad HTTP
+// (CSP, anti-clickjacking, nosniff, etc.) y se retira X-Powered-By.
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
+    header('Referrer-Policy: no-referrer');
+    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+    header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+    header_remove('X-Powered-By');
+}
+
 // VUL-03 (A05:2021 Configuración incorrecta): las credenciales ya no están
 // hardcodeadas ni usan root sin contraseña; se cargan desde config/config.php
 // (variables de entorno) y se conecta con el usuario mínimo 'pnk_app'.
