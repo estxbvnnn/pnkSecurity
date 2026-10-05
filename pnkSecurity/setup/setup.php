@@ -136,6 +136,61 @@ function csrf_validar()
     }
 }
 
+// VUL-20 (A07:2021 Autenticación): control de fuerza bruta en el login. Se registran
+// los intentos fallidos por clave (IP / IP+usuario); tras 5 en 15 min, se bloquea 15 min.
+function _login_archivo()
+{
+    $dir = __DIR__ . '/../logs';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0750, true);
+    }
+    return $dir . '/login_intentos.json';
+}
+
+function _login_leer()
+{
+    $f = _login_archivo();
+    if (!is_file($f)) {
+        return [];
+    }
+    $d = json_decode((string) @file_get_contents($f), true);
+    return is_array($d) ? $d : [];
+}
+
+function login_bloqueado($clave)
+{
+    $k = hash('sha256', $clave);
+    $data = _login_leer();
+    return !empty($data[$k]['bloqueo_hasta']) && time() < $data[$k]['bloqueo_hasta'];
+}
+
+function login_registrar_fallo($clave)
+{
+    $k = hash('sha256', $clave);
+    $data = _login_leer();
+    $ahora = time();
+    $reg = $data[$k] ?? ['intentos' => 0, 'inicio' => $ahora, 'bloqueo_hasta' => 0];
+    if ($ahora - ($reg['inicio'] ?? $ahora) > 900) {
+        $reg = ['intentos' => 0, 'inicio' => $ahora, 'bloqueo_hasta' => 0];
+    }
+    $reg['intentos']++;
+    if ($reg['intentos'] >= 5) {
+        $reg['bloqueo_hasta'] = $ahora + 900;
+    }
+    $data[$k] = $reg;
+    @file_put_contents(_login_archivo(), json_encode($data), LOCK_EX);
+}
+
+function login_limpiar($clave)
+{
+    $k = hash('sha256', $clave);
+    $data = _login_leer();
+    if (isset($data[$k])) {
+        unset($data[$k]);
+        @file_put_contents(_login_archivo(), json_encode($data), LOCK_EX);
+    }
+}
+
 function quitarespacios($titulo)
 {
     $titulo =str_replace(" ", "", $titulo);
