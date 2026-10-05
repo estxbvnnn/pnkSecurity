@@ -167,4 +167,9 @@ CREATE TABLE `usuarios` (
 # Data for table "usuarios"
 #
 
-INSERT INTO `usuarios` VALUES (1,'Administrador','admin@gmail.com','admin01','1'),(2,'Alondra','alondra@gmail.com','alondra01','1');
+# VUL-02 (A02:2021 Fallos criptográficos): contraseñas almacenadas con hash bcrypt
+# ($2y$) en lugar de texto plano. Generadas con password_hash(). Claves de laboratorio:
+# admin@gmail.com -> admin01   |   alondra@gmail.com -> alondra01
+INSERT INTO `usuarios` VALUES
+ (1,'Administrador','admin@gmail.com','$2y$12$T3HiYN6bhLwSVhaCnkh4o.dca8Vm5kkV7PbKVJyx1B/RJtnVRSe4.','1'),
+ (2,'Alondra','alondra@gmail.com','$2y$12$MZGpJRHLrjc8XYzzvksTge3N6yelm9r1d.InQVbQSCxyESqcvj4Ka','1');

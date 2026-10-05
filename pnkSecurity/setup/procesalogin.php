@@ -9,13 +9,15 @@ $usuario  = $_POST['frmusuario'] ?? '';
 $password = $_POST['frmpassword'] ?? '';
 
 $con  = conectar();
-$stmt = mysqli_prepare($con, "SELECT nombre FROM usuarios WHERE email = ? AND password = ?");
-mysqli_stmt_bind_param($stmt, "ss", $usuario, $password);
+$stmt = mysqli_prepare($con, "SELECT nombre, password FROM usuarios WHERE email = ?");
+mysqli_stmt_bind_param($stmt, "s", $usuario);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $datos  = mysqli_fetch_array($result);
 
-if ($datos)
+// VUL-02 (A02:2021): la contraseña se valida contra el hash bcrypt con
+// password_verify(); nunca se compara ni se almacena en texto plano.
+if ($datos && password_verify($password, $datos['password']))
 {
     session_start();
     $_SESSION['nombre'] = $datos['nombre'];
