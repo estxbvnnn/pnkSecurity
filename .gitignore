@@ -1,8 +1,8 @@
 # --- Secretos / credenciales (NO subir) ---
+# GIT ACCOUNTS.txt contiene contraseñas de las cuentas de GitHub: NUNCA subirlo.
 GIT ACCOUNTS.txt
-pnkSecurity/config/config.php
-pnkSecurity/logs/*.log
-pnkSecurity/logs/*.json
+# Nota: config.php y los logs se versionan a propósito por ser un proyecto académico
+# de laboratorio (credenciales de prueba). En un entorno real deberían quedar fuera.
 
 # --- Respaldos / copias / sueltos (no parte del repo) ---
 *.rar
