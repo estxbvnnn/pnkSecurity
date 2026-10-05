@@ -46,6 +46,8 @@ function eliminaritems()
 
 function eliminartodo()
 {
-    session_destroy();
+    // VUL-13 (A01:2021 Control de acceso): se vacía solo el carrito de la sesión
+    // actual, sin destruir toda la sesión del usuario.
+    $_SESSION["carrito"] = [];
 }
 ?>

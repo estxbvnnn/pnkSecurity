@@ -3,6 +3,13 @@
 include("setup/setup.php");
 session_start();
 
+// VUL-13 (A01:2021 Control de acceso / IDOR): solo usuarios autenticados pueden
+// comentar; un POST directo sin sesión se rechaza con 403 Forbidden.
+if (!isset($_SESSION['nombre'])) {
+    http_response_code(403);
+    exit('Debe iniciar sesión para comentar.');
+}
+
 // VUL-07 (A03:2021 Inyección SQL): el INSERT de comentarios pasa a ser preparado;
 // usuario y comentario se enlazan como parámetros y ya no se concatenan en el SQL
 // (una comilla simple en el campo usuario ya no rompe ni altera la consulta).
