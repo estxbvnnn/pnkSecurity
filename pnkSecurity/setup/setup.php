@@ -59,6 +59,13 @@ function db_execute($sql, $types = '', $params = [])
     return (int) $afectadas;
 }
 
+// VUL-09/10/12 (A03:2021 XSS): escape de salida HTML. Toda variable que se imprima
+// en el HTML debe pasar por e() para neutralizar <script>, atributos, etc.
+function e($valor)
+{
+    return htmlspecialchars((string) ($valor ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
 function quitarespacios($titulo)
 {
     $titulo =str_replace(" ", "", $titulo);

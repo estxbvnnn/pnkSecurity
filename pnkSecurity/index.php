@@ -415,16 +415,17 @@ if(isset($key))
           <br>
           <?php
 
-            $sqlcomentarios="select * from comentarios where id_restaurante=".$key;
-            $resultcomentarios=mysqli_query(conectar(),$sqlcomentarios);
-            while($datoscomentarios=mysqli_fetch_array($resultcomentarios))
+            // VUL-09 (A03:2021 XSS almacenado): consulta parametrizada y, sobre todo,
+            // la salida de cada reseña se escapa al mostrarla (más abajo con e()).
+            $comentarios = ($key !== null) ? db_select("select usuario, comentario, id_restaurante from comentarios where id_restaurante = ?", "i", [$key]) : [];
+            foreach($comentarios as $datoscomentarios)
             {
           ?>
           <div class="card bg-light">
             <div class="card-body">
-              <b><?php echo $datoscomentarios['usuario'];?></b>
+              <b><?php echo e($datoscomentarios['usuario']);?></b>
               <br>
-              <?php echo $datoscomentarios['comentario'];?>
+              <?php echo nl2br(e($datoscomentarios['comentario']));?>
             </div>
           </div>
           <br>
