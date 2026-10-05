@@ -42,6 +42,23 @@ function db_select($sql, $types = '', $params = [])
     return $rows;
 }
 
+// VUL-07/08 (A03:2021): helper para INSERT/UPDATE/DELETE parametrizado.
+function db_execute($sql, $types = '', $params = [])
+{
+    $con  = conectar();
+    $stmt = mysqli_prepare($con, $sql);
+    if ($stmt === false) {
+        return 0;
+    }
+    if ($types !== '') {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    $ok = mysqli_stmt_execute($stmt);
+    $afectadas = $ok ? mysqli_stmt_affected_rows($stmt) : 0;
+    mysqli_stmt_close($stmt);
+    return (int) $afectadas;
+}
+
 function quitarespacios($titulo)
 {
     $titulo =str_replace(" ", "", $titulo);
