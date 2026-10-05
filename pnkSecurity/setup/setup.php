@@ -5,6 +5,13 @@
 // (variables de entorno) y se conecta con el usuario mínimo 'pnk_app'.
 require_once __DIR__ . '/../config/config.php';
 
+// VUL-16 (A05:2021 Configuración incorrecta): la sesión se inicia UNA sola vez y al
+// comienzo, de forma centralizada. Se eliminan los session_start() dispersos y
+// tardíos de cada página.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 function conectar()
 {
     $con = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);

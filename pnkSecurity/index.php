@@ -1,7 +1,6 @@
 <?php
 
-include("setup/setup.php");
-session_start();
+include("setup/setup.php"); // la sesión ya se inicia dentro de setup.php (VUL-16)
 
 mysqli_set_charset(conectar(), 'utf8mb4');
 // VUL-04 (A03:2021 Inyección SQL, boolean-based): el parámetro id se valida como

@@ -1,7 +1,6 @@
 <?php
 
-include("setup.php");
-session_start();
+include("setup.php"); // la sesión ya se inicia dentro de setup.php (VUL-16)
 
 // VUL-14 (A01:2021 CSRF): se valida el token de la petición antes de procesar el login.
 csrf_validar();

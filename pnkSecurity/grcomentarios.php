@@ -1,7 +1,6 @@
 <?php
 
-include("setup/setup.php");
-session_start();
+include("setup/setup.php"); // la sesión ya se inicia dentro de setup.php (VUL-16)
 
 // VUL-14 (A01:2021 CSRF): token obligatorio en el POST de comentarios.
 csrf_validar();
