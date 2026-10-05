@@ -2,12 +2,19 @@
 include("setup/setup.php");
 session_start();
 
-$key=$_GET['id'];
+// VUL-11 (A03:2021 XSS reflejado / Inyección SQL): el id (keyid o id) se valida como
+// entero y la consulta del restaurante pasa a ser preparada; la salida se escapa con e().
+$key = id_valido($_GET['keyid'] ?? ($_GET['id'] ?? null));
 
-$sql_restorant="SELECT direcciones.calle, direcciones.numero, direcciones.comuna, direcciones.region, restautantes.nombre, restautantes.id, restautantes.fono, restautantes.email, restautantes.foto FROM restautantes INNER JOIN direcciones ON restautantes.direcciones_id =
-direcciones.id WHERE restautantes.id = ".$key;
-$result_restorant=mysqli_query(conectar(),$sql_restorant);
-$datos_restorant=mysqli_fetch_array($result_restorant);
+$datos_restorant = [];
+if ($key !== null) {
+    $filas_restorant = db_select(
+        "SELECT direcciones.calle, direcciones.numero, direcciones.comuna, direcciones.region, restautantes.nombre, restautantes.id, restautantes.fono, restautantes.email, restautantes.foto FROM restautantes INNER JOIN direcciones ON restautantes.direcciones_id = direcciones.id WHERE restautantes.id = ?",
+        "i",
+        [$key]
+    );
+    $datos_restorant = $filas_restorant[0] ?? [];
+}
 
 ?>
 <!DOCTYPE html>
@@ -16,7 +23,7 @@ $datos_restorant=mysqli_fetch_array($result_restorant);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title><?php echo $datos_restorant['nombre'];?></title>
+  <title><?php echo e($datos_restorant['nombre'] ?? 'Carrito');?></title>
 	<!--<link rel="icon" href="img/Fevicon.png" type="image/png">-->
 
   <link rel="stylesheet" href="vendors/bootstrap/bootstrap.min.css">
@@ -44,7 +51,7 @@ $datos_restorant=mysqli_fetch_array($result_restorant);
               if($datos_restorant['foto']!="")
               {  
                 ?>
-                  <img class="logosintituciones" src="../imagenes/cod<?php echo $key;?>/<?php echo $datos_restorant['foto'];?>" width="170px" alt="">
+                  <img class="logosintituciones" src="../imagenes/cod<?php echo e((string)$key);?>/<?php echo e($datos_restorant['foto'] ?? '');?>" width="170px" alt="">
               <?php
               }else{
                 ?>
@@ -58,7 +65,7 @@ $datos_restorant=mysqli_fetch_array($result_restorant);
         <div class="col-lg-4">
           <div class="carro">
             <div class="media float-right">
-              <a class="volver" href="index.php?id=<?php echo $_GET['keyid'];?>">
+              <a class="volver" href="index.php?id=<?php echo e((string)$key);?>">
               Volver a la Carta
               </a>&nbsp;&nbsp;
               <a class="limpiar" href="#">
@@ -94,15 +101,15 @@ $datos_restorant=mysqli_fetch_array($result_restorant);
                   <tbody>
                      <?php
                      $total=0;
-                     foreach ($_SESSION["carrito"] as $value) 
+                     foreach (($_SESSION["carrito"] ?? []) as $value)
                      {
                      ?>
                      <tr>
-                        <th scope="row"><?php echo $value["id"];?></th>
-                        <td><?php echo $value["nombre"];?></td>
+                        <th scope="row"><?php echo (int)$value["id"];?></th>
+                        <td><?php echo e($value["nombre"]);?></td>
                         <td><?php echo moneda_chilena($value["precio"]);?></td>
                         <td>
-                          <a class="elim" id="<?php echo $value["posicion"];?>" href="#">
+                          <a class="elim" id="<?php echo (int)$value["posicion"];?>" href="#">
                             <svg width="2em" height="2em" viewBox="0 0 16 16" class="bi bi-trash-fill text-danger" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                               <path fill-rule="evenodd" d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5a.5.5 0 0 0-1 0v7a.5.5 0 0 0 1 0v-7z"/>
                             </svg>
