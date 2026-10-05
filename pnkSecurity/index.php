@@ -151,10 +151,14 @@ if ($key !== null) {
   </section>
   <!--DESTACADOS-->
   <?php
-  $sql="SELECT items.id,items.visible,items.tiempo,items.puntuacion,items.destacado, items.precio, items.descripcion,items.observaciones, items.nombre, items.foto, items.orden, cartas.restautantes_id, categorias.visible FROM categorias INNER JOIN items ON items.categorias_id = categorias.id INNER JOIN cartas ON categorias.cartas_id = cartas.id
-  WHERE items.destacado = 1 AND items.eliminado IS NULL AND items.visible=1 AND cartas.restautantes_id = ".$key." AND cartas.eliminada IS NULL AND categorias.visible = 1 AND categorias.eliminado IS NULL";
-  $result=mysqli_query(conectar(),$sql);
-  $cont_destacados=mysqli_num_rows($result);
+  // VUL-05 (A03:2021 Inyección SQL, UNION-based): la consulta de destacados que
+  // usa el id pasa a ser preparada (db_select), cerrando la extracción por UNION.
+  $result = ($key !== null) ? db_select(
+    "SELECT items.id,items.visible,items.tiempo,items.puntuacion,items.destacado, items.precio, items.descripcion,items.observaciones, items.nombre, items.foto, items.orden, cartas.restautantes_id, categorias.visible FROM categorias INNER JOIN items ON items.categorias_id = categorias.id INNER JOIN cartas ON categorias.cartas_id = cartas.id WHERE items.destacado = 1 AND items.eliminado IS NULL AND items.visible=1 AND cartas.restautantes_id = ? AND cartas.eliminada IS NULL AND categorias.visible = 1 AND categorias.eliminado IS NULL",
+    "i",
+    [$key]
+  ) : [];
+  $cont_destacados=count($result);
   if( $cont_destacados!=0)
   {
   ?>
@@ -165,7 +169,7 @@ if ($key !== null) {
       </div>
       <div class="owl-carousel owl-theme featured-carousel">
       <?php
-      while($destacados=mysqli_fetch_array($result))
+      foreach($result as $destacados)
       {
       ?>
         <div class="featured-item">
@@ -232,10 +236,10 @@ if ($key !== null) {
                   <nav>
                     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
                         <?php
-                            $sqlcartas="SELECT cartas.id,cartas.restautantes_id,cartas.nombre,cartas.orden,cartas.visible FROM cartas WHERE cartas.restautantes_id = ".$key." and visible=1 AND eliminada IS NULL order by orden asc";
-                            $resultcartas=mysqli_query(conectar(),$sqlcartas);
+                            // VUL-05: consulta de cartas por id, parametrizada.
+                            $resultcartas = ($key !== null) ? db_select("SELECT cartas.id,cartas.restautantes_id,cartas.nombre,cartas.orden,cartas.visible FROM cartas WHERE cartas.restautantes_id = ? and visible=1 AND eliminada IS NULL order by orden asc", "i", [$key]) : [];
                             $arraycartas=[];
-                            while($cartas=mysqli_fetch_array($resultcartas))
+                            foreach($resultcartas as $cartas)
                             {
                               array_push($arraycartas,['nombre'=>utf8_encode(quitarespacios($cartas['nombre'])),'id'=>$cartas['id']]);
                             ?>
