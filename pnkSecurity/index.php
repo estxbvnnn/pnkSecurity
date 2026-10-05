@@ -7,7 +7,9 @@ mysqli_set_charset(conectar(), 'utf8mb4');
 // VUL-04 (A03:2021 Inyección SQL, boolean-based): el parámetro id se valida como
 // entero y la consulta del restaurante pasa a ser preparada (db_select).
 $key=id_valido($_GET['id'] ?? null);
-$_SESSION['id']=$_GET['id'];
+// VUL-15 (A07:2021 Autenticación): en la sesión se guarda el ENTERO validado,
+// no el valor crudo de la URL (que luego se reutilizaba en consultas).
+$_SESSION['id']=$key;
 
 $datos_restorant = [];
 if ($key !== null) {
