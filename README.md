@@ -12,6 +12,23 @@
 
 ---
 
+## 🌐 Demo en vivo (AWS)
+
+La versión corregida (sin vulnerabilidades) está desplegada y accesible públicamente en:
+
+- **http://52.0.165.26/**  ·  Amazon Linux 2023 · Apache 2.4 + PHP 8.5.11 + MariaDB 10.5
+
+> Entrar con **`http://`** (aún sin certificado HTTPS). Credenciales de laboratorio: `admin@gmail.com` / `admin01`.
+
+## 🗂️ Estructura del repositorio (ramas)
+
+- **`pnkweb_vulnerado`** — el proyecto original, con las vulnerabilidades (versión por defecto de la página).
+- **`pnkweb_arreglado`** *(rama por defecto)* — parte de la base vulnerable y aplica **20 commits, uno por vulnerabilidad** (`VUL-01` … `VUL-20`, en el orden del informe). Cada commit muestra el antes/después del código que corrige esa vulnerabilidad.
+
+Comparar ambas ramas permite ver el estado vulnerable frente al corregido; el historial de `pnkweb_arreglado` documenta cada corrección por separado.
+
+---
+
 ## 1. Resumen ejecutivo
 
 Se corrigieron las **20 vulnerabilidades** del informe de pentesting sobre una copia íntegra de la aplicación ubicada en `web_update/`. El trabajo se concentró en tres causas raíz: **concatenación de SQL**, **salida sin escape** y **configuración insegura por defecto**.
