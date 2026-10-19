@@ -16,7 +16,7 @@
 
 La versión corregida (sin vulnerabilidades) está desplegada y accesible públicamente en:
 
-- **http://52.0.165.26/**  ·  Amazon Linux 2023 · Apache 2.4 + PHP 8.5.11 + MariaDB 10.5
+- **http://52.0.165.26/index.php?id=1**  ·  Amazon Linux 2023 · Apache 2.4 + PHP 8.5.11 + MariaDB 10.5
 
 > Entrar con **`http://`** (aún sin certificado HTTPS). Credenciales de laboratorio: `admin@gmail.com` / `admin01`.
 
