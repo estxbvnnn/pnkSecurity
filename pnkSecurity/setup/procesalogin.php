@@ -5,6 +5,10 @@ include("setup.php"); // la sesión ya se inicia dentro de setup.php (VUL-16)
 // VUL-14 (A01:2021 CSRF): se valida el token de la petición antes de procesar el login.
 csrf_validar();
 
+// Al volver tras el login se mantiene al usuario en el restaurante que estaba
+// viendo (index.php lo guarda en la sesión). Si no hay ninguno, se usa el 1.
+$idRedir = id_valido($_SESSION['id'] ?? null) ?? 1;
+
 // VUL-01 (A03:2021 Inyección SQL): se reemplaza la concatenación por una
 // consulta preparada con parámetros enlazados. Así, entradas como
 // ' OR '1'='1' -- dejan de alterar la lógica de la consulta.
@@ -15,7 +19,7 @@ $password = $_POST['frmpassword'] ?? '';
 $ip    = $_SERVER['REMOTE_ADDR'] ?? 'desconocida';
 $clave = $ip . '|' . strtolower($usuario);
 if (login_bloqueado($clave) || login_bloqueado($ip)) {
-    header('Location:../index.php?login=bloqueado');
+    header('Location:../index.php?id=' . $idRedir . '&login=bloqueado');
     exit;
 }
 
@@ -34,12 +38,12 @@ if ($datos && password_verify($password, $datos['password']))
     login_limpiar($clave);
     login_limpiar($ip);
     $_SESSION['nombre'] = $datos['nombre'];
-    header('Location:../index.php');
+    header('Location:../index.php?id=' . $idRedir);
 } else {
     // VUL-20: login fallido -> se registra el intento (cuenta para el bloqueo).
     login_registrar_fallo($clave);
     login_registrar_fallo($ip);
-    header('Location:../index.php?login=error');
+    header('Location:../index.php?id=' . $idRedir . '&login=error');
 }
 
 ?>
