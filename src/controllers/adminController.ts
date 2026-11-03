@@ -16,6 +16,7 @@ import {
 } from "../models/itemModel";
 import { borrarFoto } from "../middlewares/upload";
 import { ItemInput } from "../types/models";
+import { registrarEvento } from "../utils/logSeguridad";
 
 /** Valida y normaliza el formulario de un ítem (nombre, precio, etc.). `foto` ya viene resuelta por el caller. */
 function parsearItemInput(body: Record<string, unknown>, foto: string): ItemInput | null {
@@ -275,6 +276,7 @@ export async function eliminarItemHandler(req: Request, res: Response, next: Nex
       await eliminarItem(itemId);
       // Nota: se conserva el archivo de imagen en disco aunque el producto se
       // elimine (borrado lógico), por si se necesita restaurar el registro.
+      registrarEvento(req, "admin_item_eliminado", { itemId, usuarioId: req.session.usuarioId });
     }
     res.redirect(`/admin?id=${restauranteId}&ok=eliminado`);
   } catch (err) {

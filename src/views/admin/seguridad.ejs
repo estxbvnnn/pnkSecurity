@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguridad — Administración</title>
+  <link rel="stylesheet" href="/vendors/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendors/themify-icons/themify-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="admin-body">
+
+<nav class="admin-bar d-flex justify-content-between align-items-center">
+  <div class="admin-brand"><i class="ti-shield"></i> Seguridad de la cuenta</div>
+  <a class="btn btn-sm btn-outline-light" href="/admin"><i class="ti-arrow-left"></i> Volver al panel</a>
+</nav>
+
+<div class="container contendor my-4" style="max-width:520px">
+  <div class="admin-form-card">
+    <h5 class="mb-3">Verificación en dos pasos (2FA)</h5>
+
+    <% if (ok === "activado") { %>
+      <div class="alert alert-success">2FA activado correctamente. Desde ahora se te pedirá un código al iniciar sesión.</div>
+    <% } else if (ok === "desactivado") { %>
+      <div class="alert alert-secondary">2FA desactivado.</div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-danger">Código incorrecto. Intenta de nuevo.</div>
+    <% } %>
+
+    <% if (habilitado) { %>
+      <p>✅ El 2FA está <b>activado</b> en tu cuenta.</p>
+      <form method="post" action="/admin/seguridad/2fa/desactivar"
+            onsubmit="return confirm('¿Desactivar la verificación en dos pasos?');">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-outline-danger">Desactivar 2FA</button>
+      </form>
+
+    <% } else if (pendienteConfirmar) { %>
+      <p>Escanea este código QR con tu app de autenticación (Google Authenticator, Authy, etc.) y luego ingresa el código de 6 dígitos para confirmar:</p>
+      <div class="text-center my-3">
+        <img src="<%= qr %>" alt="Código QR 2FA" style="max-width:220px">
+      </div>
+      <form method="post" action="/admin/seguridad/2fa/activar" class="d-flex gap-2">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+        <input type="text" class="form-control text-center" name="codigo" inputmode="numeric"
+               pattern="[0-9]{6}" maxlength="6" placeholder="000000" required
+               style="font-size:1.3rem;letter-spacing:0.3em">
+        <button type="submit" class="btn btn-admin-primary">Confirmar</button>
+      </form>
+
+    <% } else { %>
+      <p class="text-muted">El 2FA está <b>desactivado</b>. Te recomendamos activarlo para proteger el panel de administración.</p>
+      <form method="post" action="/admin/seguridad/2fa/generar">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-admin-primary">Activar 2FA</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+</body>
+</html>
