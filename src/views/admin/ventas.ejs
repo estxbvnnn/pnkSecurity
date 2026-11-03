@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ventas — <%= restaurante ? restaurante.nombre : '' %></title>
+  <link rel="stylesheet" href="/vendors/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendors/themify-icons/themify-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="admin-body">
+
+<nav class="admin-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div class="admin-brand"><i class="ti-bar-chart"></i> Ventas</div>
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <form method="get" action="/admin/ventas" class="d-flex align-items-center gap-2">
+      <select name="id" class="form-control form-control-sm form-select-sm" onchange="this.form.submit()">
+        <% restaurantes.forEach(function(r) { %>
+          <option value="<%= r.id %>" <%= r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
+        <% }); %>
+      </select>
+    </form>
+    <a class="btn btn-sm btn-outline-light" href="/admin"><i class="ti-arrow-left"></i> Volver al panel</a>
+  </div>
+</nav>
+
+<div class="container contendor my-4">
+  <h5 class="mb-3"><%= restaurante ? restaurante.nombre : '' %></h5>
+
+  <div class="admin-stats">
+    <div class="admin-stat-card">
+      <div class="icono"><i class="ti-money"></i></div>
+      <div><div class="valor">$ <%= Number(stats.totalVentas).toLocaleString('es-CL') %></div><div class="etiqueta">Total vendido</div></div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="icono"><i class="ti-receipt"></i></div>
+      <div><div class="valor"><%= stats.cantidadPedidos %></div><div class="etiqueta">Pedidos</div></div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="icono"><i class="ti-wallet"></i></div>
+      <div><div class="valor">$ <%= Number(stats.ticketPromedio).toLocaleString('es-CL') %></div><div class="etiqueta">Ticket promedio</div></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="admin-section">
+        <div class="admin-section-header" style="cursor:default">
+          <span class="titulo"><i class="ti-star"></i> Productos más vendidos</span>
+        </div>
+        <% if (!stats.topProductos.length) { %>
+          <div class="p-3 text-muted">Todavía no hay ventas registradas.</div>
+        <% } else { %>
+          <table class="admin-tabla-items">
+            <thead><tr><th>Producto</th><th>Cantidad</th><th>Recaudado</th></tr></thead>
+            <tbody>
+              <% stats.topProductos.forEach(function(p) { %>
+                <tr>
+                  <td><%= p.nombre %></td>
+                  <td><%= p.cantidadVendida %></td>
+                  <td class="admin-precio">$ <%= Number(p.totalRecaudado).toLocaleString('es-CL') %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="admin-section">
+        <div class="admin-section-header" style="cursor:default">
+          <span class="titulo"><i class="ti-calendar"></i> Ventas por día (últimos 14 días)</span>
+        </div>
+        <% if (!stats.ventasPorDia.length) { %>
+          <div class="p-3 text-muted">Sin ventas en este período.</div>
+        <% } else { %>
+          <table class="admin-tabla-items">
+            <thead><tr><th>Fecha</th><th>Total</th></tr></thead>
+            <tbody>
+              <% stats.ventasPorDia.forEach(function(v) { %>
+                <tr><td><%= v.fecha %></td><td class="admin-precio">$ <%= Number(v.total).toLocaleString('es-CL') %></td></tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <div class="admin-section-header" style="cursor:default">
+      <span class="titulo"><i class="ti-receipt"></i> Pedidos recientes</span>
+    </div>
+    <% if (!pedidos.length) { %>
+      <div class="p-3 text-muted">Sin pedidos todavía.</div>
+    <% } else { %>
+      <table class="admin-tabla-items">
+        <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+        <tbody>
+          <% pedidos.forEach(function(p) { %>
+            <tr>
+              <td>#<%= p.id %></td>
+              <td><%= p.clienteNombre %></td>
+              <td class="admin-precio">$ <%= Number(p.total).toLocaleString('es-CL') %></td>
+              <td><span class="badge-visible"><%= p.estado %></span></td>
+              <td><%= new Date(p.creado).toLocaleString('es-CL') %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+</div>
+
+</body>
+</html>
