@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title><%= restaurante ? restaurante.nombre : 'Carta Digital' %></title>
+
+  <link rel="stylesheet" href="/vendors/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendors/themify-icons/themify-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body data-login-error="<%= loginEstado || '' %>">
+
+<section>
+  <div class="container contendor">
+    <h4 class="intro-title">Comentarios</h4>
+    <% if (nombreUsuario) { %>
+      <form action="/comentarios" method="post">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+        <div class="form-group">
+          <label>Nombre:</label>
+          <input type="text" class="form-control" value="<%= nombreUsuario %>" readonly>
+        </div>
+        <div class="form-group">
+          <label>Comentario:</label>
+          <textarea class="form-control" name="comentario" rows="4" maxlength="1000" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Comentar</button>
+      </form>
+    <% } %>
+    <br>
+    <% comentarios.forEach(function(c) { %>
+      <div class="card bg-light mb-2">
+        <div class="card-body">
+          <b><%= c.usuario %></b><br>
+          <%= c.comentario %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</section>
+
+<script src="/vendors/jquery/jquery-3.2.1.min.js"></script>
+<script src="/vendors/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/vendors/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="/js/dist/carrito.js"></script>
+</body>
+</html>
