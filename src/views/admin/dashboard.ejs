@@ -18,13 +18,11 @@
   </div>
 
   <div class="d-flex align-items-center gap-2 flex-wrap">
-    <form method="get" action="/admin" class="d-flex align-items-center gap-2">
-      <select name="id" class="form-control form-control-sm form-select-sm selector-restaurante">
-        <% restaurantes.forEach(function(r) { %>
-          <option value="<%= r.id %>" <%= r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
-        <% }); %>
-      </select>
-    </form>
+    <select class="form-control form-control-sm form-select-sm selector-restaurante-path">
+      <% restaurantes.forEach(function(r) { %>
+        <option value="<%= r.id %>" <%= r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
+      <% }); %>
+    </select>
     <a class="btn btn-sm btn-outline-light" href="/restaurante/<%= restauranteId %>">
       <i class="ti-eye"></i> Ver Carta Pública
     </a>

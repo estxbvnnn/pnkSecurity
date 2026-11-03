@@ -23,10 +23,18 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    // --- Selector de restaurante (dashboard/ventas): el CSP bloquea
-    // onchange="..." inline (script-src-attr 'none'), por eso se enlaza aquí. ---
+    // --- Selector de restaurante (ventas): el CSP bloquea onchange="..."
+    // inline (script-src-attr 'none'), por eso se enlaza aquí. ---
     document.querySelectorAll<HTMLSelectElement>(".selector-restaurante").forEach((select) => {
       select.addEventListener("change", () => select.form?.submit());
+    });
+
+    // --- Selector de restaurante (dashboard): navega a /admin/:id (ruta
+    // limpia, sin ?id= en la URL). ---
+    document.querySelectorAll<HTMLSelectElement>(".selector-restaurante-path").forEach((select) => {
+      select.addEventListener("change", () => {
+        window.location.href = `/admin/${select.value}`;
+      });
     });
 
     // --- Mostrar/Ocultar carta: evita que el click abra/cierre el acordeón

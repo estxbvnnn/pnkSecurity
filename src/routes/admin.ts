@@ -65,6 +65,10 @@ function conManejoDeSubidaRestaurante(req: Request, res: Response, next: NextFun
 }
 
 adminRouter.get("/", dashboard);
+// Id del restaurante como segmento de ruta (/admin/5) en vez de query string
+// (/admin?id=5). El "(\\d+)" evita que choque con rutas literales como
+// /admin/restaurantes, /admin/ventas, /admin/seguridad, /admin/owasp.
+adminRouter.get("/:id(\\d+)", dashboard);
 
 adminRouter.post("/cartas", csrfValidar, crearCartaHandler);
 adminRouter.post("/cartas/:id/toggle", csrfValidar, toggleCartaHandler);

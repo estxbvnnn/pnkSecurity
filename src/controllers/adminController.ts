@@ -47,7 +47,7 @@ function parsearItemInput(body: Record<string, unknown>, foto: string): ItemInpu
 /** Panel principal: muestra toda la carta (incl. ítems ocultos) para gestionarla. */
 export async function dashboard(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const restauranteId = idValido(req.query.id) ?? idValido(req.session.restauranteId) ?? 1;
+    const restauranteId = idValido(req.params.id) ?? idValido(req.session.restauranteId) ?? 1;
     req.session.restauranteId = restauranteId;
 
     const [restaurante, cartas, restaurantes] = await Promise.all([
@@ -106,7 +106,7 @@ export async function crearCartaHandler(req: Request, res: Response, next: NextF
     if (nombre && nombre.length <= 45) {
       await crearCarta(restauranteId, nombre, orden);
     }
-    res.redirect(`/admin?id=${restauranteId}`);
+    res.redirect(`/admin/${restauranteId}`);
   } catch (err) {
     next(err);
   }
@@ -119,7 +119,7 @@ export async function toggleCartaHandler(req: Request, res: Response, next: Next
     if (cartaId !== null) {
       await alternarVisibilidadCarta(cartaId, restauranteId);
     }
-    res.redirect(`/admin?id=${restauranteId}`);
+    res.redirect(`/admin/${restauranteId}`);
   } catch (err) {
     next(err);
   }
@@ -134,7 +134,7 @@ export async function crearCategoriaHandler(req: Request, res: Response, next: N
     if (cartaId !== null && nombre && nombre.length <= 100) {
       await crearCategoria(cartaId, nombre, orden);
     }
-    res.redirect(`/admin?id=${restauranteId}`);
+    res.redirect(`/admin/${restauranteId}`);
   } catch (err) {
     next(err);
   }
@@ -148,7 +148,7 @@ export async function toggleCategoriaHandler(req: Request, res: Response, next: 
     if (categoriaId !== null && cartaId !== null) {
       await alternarVisibilidadCategoria(categoriaId, cartaId);
     }
-    res.redirect(`/admin?id=${restauranteId}`);
+    res.redirect(`/admin/${restauranteId}`);
   } catch (err) {
     next(err);
   }
@@ -221,7 +221,7 @@ export async function crearItemHandler(req: Request, res: Response, next: NextFu
       return;
     }
     await crearItem(datos);
-    res.redirect(`/admin?id=${restauranteId}&ok=creado`);
+    res.redirect(`/admin/${restauranteId}?ok=creado`);
   } catch (err) {
     next(err);
   }
@@ -262,7 +262,7 @@ export async function actualizarItemHandler(req: Request, res: Response, next: N
     }
 
     await actualizarItem(itemId, datos);
-    res.redirect(`/admin?id=${restauranteId}&ok=actualizado`);
+    res.redirect(`/admin/${restauranteId}?ok=actualizado`);
   } catch (err) {
     next(err);
   }
@@ -278,7 +278,7 @@ export async function eliminarItemHandler(req: Request, res: Response, next: Nex
       // elimine (borrado lógico), por si se necesita restaurar el registro.
       registrarEvento(req, "admin_item_eliminado", { itemId, usuarioId: req.session.usuarioId });
     }
-    res.redirect(`/admin?id=${restauranteId}&ok=eliminado`);
+    res.redirect(`/admin/${restauranteId}?ok=eliminado`);
   } catch (err) {
     next(err);
   }

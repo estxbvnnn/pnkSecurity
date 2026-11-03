@@ -10,6 +10,7 @@ import { Request, Response } from "express";
 interface SeccionOwasp {
   codigo: string;
   titulo: string;
+  icono: string;
   puntos: string[];
   riesgoAceptado?: string;
 }
@@ -18,6 +19,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A01:2021",
     titulo: "Broken Access Control",
+    icono: "ti-lock",
     puntos: [
       "Todas las rutas `/admin/*` exigen sesión con `rol = 'admin'`, verificado en el servidor en **cada** petición: `middlewares/auth.ts` (`requireAdmin`).",
       "Las operaciones de edición están **ancladas al restaurante correcto** (multi-tenant): alternar visibilidad de una carta exige `id` Y `restaurante_id` en el `WHERE` (`models/cartaModel.ts`).",
@@ -28,6 +30,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A02:2021",
     titulo: "Cryptographic Failures",
+    icono: "ti-key",
     puntos: [
       "Contraseñas con **bcrypt** (costo 12), nunca texto plano: `scripts/seed.ts`, verificación en `controllers/authController.ts`.",
       "Secreto TOTP del 2FA **cifrado en reposo** con AES-256-GCM antes de guardarse en `usuarios.secreto_2fa`: `utils/cripto2fa.ts`.",
@@ -40,6 +43,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A03:2021",
     titulo: "Injection",
+    icono: "ti-alert",
     puntos: [
       "**100% de las consultas SQL son parametrizadas** (`$1, $2, …` vía `pg`), nunca concatenación de strings con datos del usuario — en todos los modelos.",
       "Las vistas EJS **auto-escapan** por defecto (`<%= %>`); no se usa `<%- %>` sin escapar en ningún lado — previene XSS reflejado/almacenado.",
@@ -48,6 +52,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A04:2021",
     titulo: "Insecure Design",
+    icono: "ti-ruler-pencil",
     puntos: [
       "Login en **dos pasos** (contraseña + TOTP opcional) para admin, con el estado intermedio solo en sesión (`req.session.pendiente2fa`).",
       "Validación y normalización server-side de todo input de formularios (`idValido`, `parsearItemInput`, `parsearRestauranteInput`).",
@@ -58,6 +63,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A05:2021",
     titulo: "Security Misconfiguration",
+    icono: "ti-settings",
     puntos: [
       "Cabeceras de seguridad centralizadas con `helmet` (CSP, X-Frame-Options, X-Content-Type-Options, etc.): `middlewares/security.ts`.",
       "`X-Powered-By` deshabilitado: `app.ts`.",
@@ -71,6 +77,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A06:2021",
     titulo: "Vulnerable and Outdated Components",
+    icono: "ti-package",
     puntos: [
       "Dependencias fijadas con `package-lock.json`; `npm ci` (no `npm install`) en el build de Docker.",
       "`npm audit` reporta 4 vulnerabilidades moderadas, todas en la cadena de build de `ejs` (`jake → filelist → minimatch`) — no es código que se ejecute en el camino de una petición HTTP.",
@@ -82,6 +89,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A07:2021",
     titulo: "Identification and Authentication Failures",
+    icono: "ti-id-badge",
     puntos: [
       "bcrypt para contraseñas + **segundo factor TOTP (2FA)** opcional para admin, con QR y confirmación del primer código antes de activarlo: `controllers/seguridadController.ts`.",
       "`req.session.regenerate()` en cada login exitoso (password y 2FA) — previene session fixation.",
@@ -91,6 +99,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A08:2021",
     titulo: "Software and Data Integrity Failures",
+    icono: "ti-harddrive",
     puntos: [
       "`npm ci` instala exactamente lo que dice `package-lock.json`.",
       "Subida de archivos con whitelist doble (extensión Y MIME) y límite de 5 MB: `middlewares/upload.ts`.",
@@ -100,6 +109,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A09:2021",
     titulo: "Security Logging and Monitoring Failures",
+    icono: "ti-eye",
     puntos: [
       "Registro estructurado de eventos de seguridad (`utils/logSeguridad.ts`), nunca con contraseñas/códigos/tokens: login fallido/exitoso, 2FA, acciones administrativas destructivas.",
       "En Docker, disponible con `docker compose logs app-<ambiente>`.",
@@ -109,6 +119,7 @@ const SECCIONES: SeccionOwasp[] = [
   {
     codigo: "A10:2021",
     titulo: "Server-Side Request Forgery (SSRF)",
+    icono: "ti-server",
     puntos: ["No aplica: la aplicación no realiza peticiones salientes a URLs provistas por el usuario."],
   },
 ];
@@ -132,13 +143,21 @@ function formatearInline(texto: string): string {
 }
 
 export function mostrarOwasp(_req: Request, res: Response): void {
-  const secciones = SECCIONES.map((s) => ({
+  const secciones = SECCIONES.map((s, i) => ({
     ...s,
+    indice: i + 1,
     puntosHtml: s.puntos.map(formatearInline),
     riesgoAceptadoHtml: s.riesgoAceptado ? formatearInline(s.riesgoAceptado) : null,
   }));
+  const stats = {
+    categorias: secciones.length,
+    controles: secciones.reduce((acc, s) => acc + s.puntos.length, 0),
+    pendientes: secciones.filter((s) => s.riesgoAceptado).length,
+    brechas: BRECHAS_CERRADAS.length,
+  };
   res.render("admin/owasp", {
     secciones,
+    stats,
     brechasCerradas: BRECHAS_CERRADAS.map(formatearInline),
   });
 }
