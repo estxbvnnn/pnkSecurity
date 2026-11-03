@@ -13,6 +13,129 @@
   <link rel="stylesheet" href="/css/custom.css">
 </head>
 <body data-login-error="<%= loginEstado || '' %>">
+<nav class="navbar navbar-light bg-light">
+  <form class="d-flex flex-wrap align-items-center gap-2" role="search" action="/login" method="post">
+    <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+    <div class="input-group" style="width:auto">
+      <span class="input-group-text" id="basic-addon1">@</span>
+      <input type="email" class="form-control" name="email" placeholder="Usuario (email)" required>
+    </div>
+    <input type="password" class="form-control" name="password" placeholder="Contraseña" required style="width:auto">
+    <button type="submit" class="btn btn-outline-primary my-2 my-sm-0">Ingresar</button>
+  </form>
+</nav>
+
+<section>
+  <div class="container contendor">
+    <div class="row">
+      <div class="col-lg-4">
+        <div style="text-align:center;">
+          <img class="logosintituciones" src="/img/logo.png" width="190px" alt="">
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div style="text-align:center;">
+          <% if (restaurante && restaurante.foto) { %>
+            <img class="logosintituciones" src="/imagenes/cod<%= restauranteId %>/<%= restaurante.foto %>" width="170px" alt="">
+          <% } else { %>
+            <img class="logosintituciones" src="/img/logo_empresa_comodin.png" width="170px" alt="">
+          <% } %>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="carro">
+          <div class="media float-end">
+            <a class="button_carrito" href="/carrito">
+              🛒 Productos Seleccionados
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% if (restaurante) { %>
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h4><%= restaurante.nombre %></h4>
+        <h5>📍 <%= restaurante.calle %> #<%= restaurante.numero %>, <%= restaurante.comuna %></h5>
+        <h5>
+          <% if (restaurante.fono) { %>📞 <%= restaurante.fono %><% } %>
+          <% if (restaurante.email) { %> ✉️ <%= restaurante.email %><% } %>
+        </h5>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</section>
+
+<% if (destacados.length) { %>
+<section class="destacados">
+  <div class="container contendor">
+    <div class="section-intro"><h4 class="intro-title">Menús Destacados</h4></div>
+    <div class="row">
+      <% destacados.forEach(function(item) { %>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="featured-item h-100">
+            <img class="card-img rounded-0" width="350" height="235"
+                 src="<%= item.foto ? '/imagenes/cod' + restauranteId + '/' + item.foto : '/img/carta_comodin.png' %>" alt="">
+            <div class="item-body">
+              <h3><%= item.nombre %></h3>
+              <p><%= item.descripcion %></p>
+              <div class="d-flex justify-content-between">
+                <span><%= '★'.repeat(item.puntuacion) %></span>
+                <h3 class="price-tag">$ <%= Number(item.precio).toLocaleString('es-CL') %></h3>
+              </div>
+              <button class="button btn-seleccionar" data-id="<%= item.id %>">Seleccionar</button>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section>
+  <div class="container contendor">
+    <nav>
+      <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+        <% secciones.forEach(function(s, i) { %>
+          <a class="nav-item nav-link carta-tab<%= i === 0 ? ' active' : '' %>"
+             href="#carta<%= s.carta.id %>" role="tab"><%= s.carta.nombre %></a>
+        <% }); %>
+      </div>
+    </nav>
+    <div class="tab-content py-3">
+      <% secciones.forEach(function(s, i) { %>
+        <div class="tab-pane fade<%= i === 0 ? ' show active' : '' %>" id="carta<%= s.carta.id %>" role="tabpanel">
+          <% if (!s.categoriasConItems.length) { %>
+            <div class="text-center"><h4>No hay información para mostrar</h4></div>
+          <% } %>
+          <% s.categoriasConItems.forEach(function(ci) { %>
+            <div class="section-intro mb-20px"><h4 class="intro-title"><%= ci.categoria.nombre %></h4></div>
+            <div class="row">
+              <% ci.items.forEach(function(item) { %>
+                <div class="<%= ci.items.length > 1 ? 'col-lg-6' : 'col-lg-12' %>">
+                  <div class="d-flex align-items-center food-card">
+                    <img class="me-3" width="120"
+                         src="<%= item.foto ? '/imagenes/cod' + restauranteId + '/' + item.foto : '/img/carta_comodin.png' %>" alt="">
+                    <div class="media-body flex-grow-1">
+                      <div class="d-flex justify-content-between food-card-title">
+                        <h4><%= item.nombre %></h4>
+                        <h3 class="price-tag">$ <%= Number(item.precio).toLocaleString('es-CL') %></h3>
+                      </div>
+                      <p><%= item.descripcion %></p>
+                      <button class="button btn-seleccionar float-end" data-id="<%= item.id %>">Seleccionar</button>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% }); %>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
 
 <section>
   <div class="container contendor">
@@ -42,6 +165,7 @@
     <% }); %>
   </div>
 </section>
+
 
 <script src="/vendors/jquery/jquery-3.2.1.min.js"></script>
 <script src="/vendors/bootstrap/bootstrap.bundle.min.js"></script>
