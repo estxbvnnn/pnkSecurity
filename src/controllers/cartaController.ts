@@ -22,6 +22,7 @@ export async function verCarta(req: Request, res: Response, next: NextFunction):
       res.status(404).send("Restaurante no encontrado.");
       return;
     }
+    req.session.restauranteId = restauranteId; // se guarda el ENTERO ya validado
 
     const restaurante = await obtenerRestaurante(restauranteId);
     if (!restaurante) {
