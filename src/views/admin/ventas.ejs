@@ -15,7 +15,7 @@
   <div class="admin-brand"><i class="ti-bar-chart"></i> Ventas</div>
   <div class="d-flex align-items-center gap-2 flex-wrap">
     <form method="get" action="/admin/ventas" class="d-flex align-items-center gap-2">
-      <select name="id" class="form-control form-control-sm form-select-sm" onchange="this.form.submit()">
+      <select name="id" class="form-control form-control-sm form-select-sm selector-restaurante">
         <% restaurantes.forEach(function(r) { %>
           <option value="<%= r.id %>" <%= r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
         <% }); %>
@@ -114,5 +114,9 @@
   </div>
 </div>
 
+<script src="/vendors/jquery/jquery-3.2.1.min.js"></script>
+<script src="/vendors/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/vendors/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="/js/dist/admin.js"></script>
 </body>
 </html>

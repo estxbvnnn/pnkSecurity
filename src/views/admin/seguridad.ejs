@@ -31,8 +31,7 @@
 
     <% if (habilitado) { %>
       <p>✅ El 2FA está <b>activado</b> en tu cuenta.</p>
-      <form method="post" action="/admin/seguridad/2fa/desactivar"
-            onsubmit="return confirm('¿Desactivar la verificación en dos pasos?');">
+      <form class="form-desactivar-2fa" method="post" action="/admin/seguridad/2fa/desactivar">
         <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
         <button type="submit" class="btn btn-outline-danger">Desactivar 2FA</button>
       </form>
@@ -60,5 +59,9 @@
   </div>
 </div>
 
+<script src="/vendors/jquery/jquery-3.2.1.min.js"></script>
+<script src="/vendors/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/vendors/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="/js/dist/admin.js"></script>
 </body>
 </html>

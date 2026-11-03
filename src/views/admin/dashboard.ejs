@@ -19,7 +19,7 @@
 
   <div class="d-flex align-items-center gap-2 flex-wrap">
     <form method="get" action="/admin" class="d-flex align-items-center gap-2">
-      <select name="id" class="form-control form-control-sm form-select-sm" onchange="this.form.submit()">
+      <select name="id" class="form-control form-control-sm form-select-sm selector-restaurante">
         <% restaurantes.forEach(function(r) { %>
           <option value="<%= r.id %>" <%= r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
         <% }); %>
@@ -36,6 +36,9 @@
     </a>
     <a class="btn btn-sm btn-outline-light" href="/admin/seguridad">
       <i class="ti-shield"></i> Seguridad
+    </a>
+    <a class="btn btn-sm btn-outline-light" href="/admin/owasp">
+      <i class="ti-clipboard"></i> OWASP
     </a>
     <a class="btn btn-sm btn-outline-light" href="/logout">
       <i class="ti-power-off"></i> Cerrar Sesión
@@ -85,7 +88,7 @@
           <% if (!seccion.carta.visible) { %><span class="badge-oculto ms-1">OCULTA</span><% } %>
         </span>
         <span class="d-flex align-items-center gap-2">
-          <form method="post" action="/admin/cartas/<%= seccion.carta.id %>/toggle" onclick="event.stopPropagation()">
+          <form class="form-toggle-carta" method="post" action="/admin/cartas/<%= seccion.carta.id %>/toggle">
             <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
             <button type="submit" class="btn btn-sm btn-outline-secondary">
               <%= seccion.carta.visible ? 'Ocultar' : 'Mostrar' %>

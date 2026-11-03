@@ -23,6 +23,36 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    // --- Selector de restaurante (dashboard/ventas): el CSP bloquea
+    // onchange="..." inline (script-src-attr 'none'), por eso se enlaza aquí. ---
+    document.querySelectorAll<HTMLSelectElement>(".selector-restaurante").forEach((select) => {
+      select.addEventListener("change", () => select.form?.submit());
+    });
+
+    // --- Mostrar/Ocultar carta: evita que el click abra/cierre el acordeón
+    // (mismo motivo: el CSP bloquea onclick="event.stopPropagation()" inline). ---
+    document.querySelectorAll<HTMLFormElement>(".form-toggle-carta").forEach((form) => {
+      form.addEventListener("click", (ev) => ev.stopPropagation());
+    });
+
+    // --- Confirmar antes de desactivar el 2FA ---
+    document.querySelectorAll<HTMLFormElement>(".form-desactivar-2fa").forEach((form) => {
+      form.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const confirmacion = await Swal.fire({
+          title: "¿Desactivar la verificación en dos pasos?",
+          text: "El panel de administración quedará protegido solo con contraseña.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, desactivar",
+          cancelButtonText: "Cancelar",
+          confirmButtonColor: "#b00020",
+          cancelButtonColor: "#6c757d",
+        });
+        if (confirmacion.isConfirmed) form.submit();
+      });
+    });
+
     // --- Confirmar antes de eliminar un producto ---
     document.querySelectorAll<HTMLFormElement>(".form-eliminar-item").forEach((form) => {
       form.addEventListener("submit", async (ev) => {
