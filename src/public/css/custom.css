@@ -1,0 +1,312 @@
+/**
+ * Ajustes propios sobre el estilo heredado de pnkSecurity (style.css).
+ *
+ * Bug corregido: este proyecto usa Bootstrap 4.1.3 (heredado de pnkSecurity),
+ * pero las clases `.gap-2`/`.gap-3` son utilidades de Bootstrap 5 — en 4.1.3
+ * no existen, así que no hacían nada y el texto quedaba pegado sin espacio
+ * (ej. "Bienvenido: AlondraCerrar Sesión"). Se agregan aquí como polyfill.
+ */
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-3 {
+  gap: 1rem;
+}
+
+/**
+ * Bug corregido: `.food-card-title::after` dibuja una línea decorativa de
+ * ancho 100% pensada para un layout con `float` (título a la izquierda,
+ * precio pegado detrás gracias a fondos que "tapan" la línea). Al usar
+ * Bootstrap `d-flex justify-content-between` (necesario para que el layout
+ * responda bien en una tarjeta a ancho completo), el precio se empuja al
+ * extremo derecho y la línea queda larga y desconectada del contenido
+ * ("se sale" de la tarjeta). Se reemplaza por un layout flex simple y
+ * limpio, sin la línea decorativa frágil.
+ */
+.food-card-title::after {
+  display: none;
+}
+.food-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.food-card-title h4,
+.food-card-title h3 {
+  width: auto;
+  background: transparent;
+}
+
+/**
+ * Bug corregido: el estilo heredado dibuja un triángulo decorativo rojo
+ * (`nav > div a.nav-item.nav-link.active:after`) bajo la pestaña activa,
+ * posicionado con un `left: -10%` pensado para 2 pestañas anchas. Con 8
+ * pestañas angostas (nav-fill, como "Vinos, Bebidas, Entradas..."), el
+ * cálculo de porcentaje queda muy desplazado y el triángulo aparece suelto,
+ * lejos de la pestaña (se veía como un ícono de ubicación rojo mal puesto).
+ * Se quita: el resaltado de color de la pestaña activa ya es suficiente.
+ */
+nav > div a.nav-item.nav-link.active:after {
+  display: none;
+}
+/* El CSS original daba el MISMO fondo a la pestaña activa e inactiva — sin
+ * el triángulo, no quedaba ninguna forma de saber cuál estaba seleccionada.
+ * Se agrega un indicador simple y estable (fondo + línea inferior). */
+#nav-tab a.nav-item.nav-link.active {
+  background: var(--admin-navy, #0b2e4f) !important;
+  box-shadow: inset 0 -3px 0 #d4af37;
+}
+
+/* El contenedor del producto no debe permitir que su contenido se desborde. */
+.food-card {
+  overflow: hidden;
+}
+.food-card .media-body {
+  min-width: 0; /* evita que un título/descr. largos empujen el ancho del flex item */
+}
+.food-card img {
+  flex-shrink: 0;
+}
+
+/* =======================================================================
+ * Panel de administración
+ * ===================================================================== */
+:root {
+  --admin-navy: #0b2e4f;
+  --admin-navy-dark: #081f37;
+  --admin-accent: #d4af37;
+  --admin-bg: #f4f6f9;
+  --admin-border: #e3e7ec;
+}
+
+.admin-body {
+  background: var(--admin-bg);
+  min-height: 100vh;
+}
+
+/* --- Barra superior --- */
+.admin-bar {
+  background: linear-gradient(135deg, var(--admin-navy) 0%, var(--admin-navy-dark) 100%);
+  padding: 0.75rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.admin-bar .admin-brand {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin-bar .admin-brand i {
+  color: var(--admin-accent);
+}
+.admin-bar select.form-select-sm {
+  min-width: 220px;
+}
+.admin-bar .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.admin-bar .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* --- Tarjetas de estadísticas --- */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+.admin-stat-card {
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+}
+.admin-stat-card .icono {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #fff;
+  background: var(--admin-navy);
+  flex-shrink: 0;
+}
+.admin-stat-card.destacados .icono { background: #b8860b; }
+.admin-stat-card.ocultos .icono { background: #6c757d; }
+.admin-stat-card .valor {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a2733;
+  line-height: 1.1;
+}
+.admin-stat-card .etiqueta {
+  font-size: 0.78rem;
+  color: #6b7785;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* --- Tarjeta de carta (acordeón) --- */
+.admin-section {
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+}
+.admin-section-header {
+  background: #fff;
+  padding: 0.85rem 1.25rem;
+  font-weight: 600;
+  font-size: 1.02rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  color: #1a2733;
+}
+.admin-section-header:hover {
+  background: #fafbfc;
+}
+.admin-section-header .titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.admin-section-header .titulo i {
+  color: var(--admin-navy);
+}
+.admin-section-header .chevron {
+  transition: transform 0.2s ease;
+  color: #8a94a1;
+}
+.admin-section-header[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+.admin-section-body {
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-categoria-header {
+  background: var(--admin-bg);
+  padding: 0.55rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: #3a4654;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--admin-border);
+}
+
+/* --- Tabla de productos --- */
+.admin-tabla-items {
+  width: 100%;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.admin-tabla-items th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a94a1;
+  font-weight: 600;
+  border-top: none;
+  padding: 0.4rem 1.25rem;
+}
+.admin-tabla-items td {
+  padding: 0.55rem 1.25rem;
+  vertical-align: middle;
+}
+.admin-tabla-items tr:hover td {
+  background: #fafbfc;
+}
+.admin-tabla-items .producto-nombre {
+  font-weight: 600;
+  color: #1a2733;
+}
+.admin-tabla-items .producto-desc {
+  font-size: 0.8rem;
+  color: #8a94a1;
+}
+.admin-precio {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* --- Badges de estado --- */
+.badge-destacado {
+  background: #fff6e0;
+  color: #9c6f00;
+  border: 1px solid #f0d78c;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 5px;
+}
+.admin-badge-oculto,
+.badge-oculto {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #b00020;
+  background: #fdecee;
+  border: 1px solid #f3b9c2;
+  border-radius: 5px;
+  padding: 0.2rem 0.5rem;
+}
+.badge-visible {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #1e7e34;
+  background: #e8f6ec;
+  border: 1px solid #b7e3c3;
+  border-radius: 5px;
+  padding: 0.2rem 0.5rem;
+}
+
+/* --- Formularios "agregar" compactos --- */
+.admin-add-form {
+  background: var(--admin-bg);
+  padding: 0.65rem 1.25rem;
+  border-top: 1px solid var(--admin-border);
+}
+
+/* --- Tarjeta de formulario (nuevo/editar producto) --- */
+.admin-form-card {
+  background: #fff;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 1.75rem;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+}
+.admin-form-card label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #3a4654;
+}
+
+/* --- Botón flotante nuevo producto --- */
+.btn-admin-primary {
+  background: var(--admin-navy);
+  border-color: var(--admin-navy);
+  color: #fff;
+}
+.btn-admin-primary:hover {
+  background: var(--admin-navy-dark);
+  border-color: var(--admin-navy-dark);
+  color: #fff;
+}
