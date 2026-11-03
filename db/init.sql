@@ -126,12 +126,11 @@ INSERT INTO direcciones (id, calle, numero, comuna, region) VALUES
 
 INSERT INTO restaurantes (id, rut, nombre, fono, foto, email, direccion_id) VALUES
   (1, '99887766-5', 'Afríca Restobar', '22334455', 'resto1.jpg', 'mail@correo.cl', 2),
-  (2, '88776655-4', 'Restaurant la Bahía', '512323232', 'resto2.png', 'mail1@correo.cl', 3),
-  (3, '22334455-6', 'La Esquina del Sabor', '22334455', 'logo_empresa_comodin.png', 'mail2@correo.cl', 4),
-  (4, '258-3', 'La Pica de Armando', '223366', 'logo_empresa_comodin.png', 'mail3@correo.cl', 5),
-  (5, '258-9', 'Donde Carlos', '336699', 'logo_empresa_comodin.png', 'mail4@correo.cl', 6),
-  (6, '258-6', 'RestoPenka', '336699', 'logo_empresa_comodin.png', 'mail5@correo.cl', 7),
-  (7, '369-5', 'La Pica de Carolina', '336699', 'logo_empresa_comodin.png', 'mail6@correo.cl', 8);
+  (2, '88776655-4', 'Restaurant la Bahía', '512323232', 'bahia.jpg', 'mail1@correo.cl', 3),
+  (3, '22334455-6', 'La Esquina del Sabor', '22334455', 'resto3.jpg', 'mail2@correo.cl', 4),
+  (4, '258-3', 'La Pica de Armando', '223366', 'resto4.jpg', 'mail3@correo.cl', 5),
+  (5, '258-9', 'Donde Carlos', '336699', 'resto5.jpg', 'mail4@correo.cl', 6),
+  (6, '258-6', 'RestoPenka', '336699', 'resto6.jpg', 'mail5@correo.cl', 7);
 
 INSERT INTO cartas (id, nombre, orden, visible, foto, restaurante_id) VALUES
   (1, 'Vinos', 1, TRUE, 'carta2.jpg', 1),
@@ -144,7 +143,11 @@ INSERT INTO cartas (id, nombre, orden, visible, foto, restaurante_id) VALUES
   (8, 'Dulces', 7, TRUE, 'carta6.jpg', 1),
   (10, 'Vinos', 1, TRUE, 'carta10.jpg', 2),
   (11, 'Principal', 2, TRUE, 'carta11.jpg', 2),
-  (12, 'Comiditas', 2, TRUE, 'carta12.jpg', 2);
+  (12, 'Comiditas', 2, TRUE, 'carta12.jpg', 2),
+  (13, 'Platos', 1, TRUE, NULL, 3),
+  (14, 'Comidas', 1, TRUE, NULL, 4),
+  (15, 'Carta', 1, TRUE, NULL, 5),
+  (16, 'Platos Típicos', 1, TRUE, NULL, 6);
 
 INSERT INTO categorias (id, nombre, visible, orden, carta_id) VALUES
   (1, 'Blancos', TRUE, 1, 1),
@@ -160,19 +163,40 @@ INSERT INTO categorias (id, nombre, visible, orden, carta_id) VALUES
   (11, 'Sin Alcohol', TRUE, 2, 2),
   (12, 'Blancos', TRUE, 2, 10),
   (13, 'Tintos', TRUE, 1, 10),
-  (14, 'Carnes', TRUE, 1, 11);
+  (14, 'Carnes', TRUE, 1, 11),
+  (15, 'Mariscos', TRUE, 1, 12),
+  (16, 'Principales', TRUE, 1, 13),
+  (17, 'A la Parrilla', TRUE, 1, 14),
+  (18, 'Platos de Fondo', TRUE, 1, 15),
+  (19, 'Parrilla Criolla', TRUE, 1, 16);
 
 INSERT INTO items (id, nombre, descripcion, tiempo, observaciones, precio, visible, destacado, puntuacion, foto, orden, categoria_id) VALUES
   (1, 'Ensalada Cesar', 'Ensalada con queso', '15 minutos', '', 3500, TRUE, FALSE, 4, 'item1.jpg', 1, 7),
-  (2, 'Crema de espinacas', 'Crema a base de espinacas y finas hierbas', '20 minutos', '', 2000, TRUE, TRUE, 4, 'item2.jpg', 2, 8),
+  (2, 'Crema de espinacas', 'Crema a base de espinacas y finas hierbas', '20 minutos', '', 2000, TRUE, TRUE, 4, '38b987d5f7d33e38adff84741c533b6f.jpg', 2, 8),
   (4, 'Pisco Sour', 'Pisco sour casero', '15 minutos', '', 3500, TRUE, FALSE, 0, 'item4.jpg', 0, 10),
   (5, 'Lomo a lo Pobre', 'Lomo con papas fritas, huevo y cebolla', '30 minutos', 'Muy sabroso', 12500, TRUE, TRUE, 5, 'item5.jpg', 1, 3),
-  (7, 'Lomo a lo Pobre', 'Lomo a lo Pobre', '20 minutos', 'Rico Lomo a lo Pobre', 9900, TRUE, TRUE, 3, 'item3.jpg', 2, 3);
+  (7, 'Lomo a lo Pobre', 'Lomo a lo Pobre', '20 minutos', 'Rico Lomo a lo Pobre', 9900, TRUE, TRUE, 3, 'item3.jpg', 2, 3),
+  (10, 'Vino Blanco de la Casa', 'Sauvignon Blanc fresco, ideal para mariscos', '', NULL, 6500, TRUE, FALSE, 0, 'vino_blanco.jpg', 1, 12),
+  (11, 'Vino Tinto Reserva', 'Cabernet Sauvignon con cuerpo, nota a frutos rojos', '', NULL, 7500, TRUE, FALSE, 0, 'vino_tinto.jpg', 1, 13),
+  (12, 'Lomo a la Parrilla', 'Lomo vetado a la parrilla con guarnicion a elección', '25 minutos', NULL, 11900, TRUE, FALSE, 5, 'lomo_parrilla.jpg', 1, 14),
+  (13, 'Sándwich Barros Luco', 'Sándwich de lomo y queso derretido, pan amasado', '15 minutos', NULL, 5900, TRUE, FALSE, 4, 'sandwich_barros_luco.jpg', 1, 16),
+  (14, 'Choripán Armando', 'Chorizo a la parrilla en pan artesanal con pebre', '10 minutos', NULL, 3900, TRUE, FALSE, 5, 'choripan.jpg', 1, 17),
+  (15, 'Ceviche de la Bahía', 'Pescado blanco marinado en limón con cebolla morada y cilantro', '15 minutos', NULL, 8900, TRUE, FALSE, 5, 'ceviche.jpg', 1, 15),
+  (16, 'Empanada de Pino', 'Empanada horneada, relleno tradicional de pino', '10 minutos', NULL, 2200, TRUE, FALSE, 4, 'empanada_pino.jpg', 1, 16),
+  (17, 'Cazuela de Pollo', 'Cazuela casera con pollo, papa, zapallo y choclo', '25 minutos', NULL, 6500, TRUE, FALSE, 4, 'cazuela_pollo.jpg', 1, 16),
+  (18, 'Costillar a la Parrilla', 'Costillar de cerdo ahumado a la parrilla con salsa BBQ', '30 minutos', NULL, 9900, TRUE, FALSE, 5, 'costillar.jpg', 1, 17),
+  (19, 'Anticuchos Armando', 'Brochetas de carne a la parrilla, estilo criollo', '20 minutos', NULL, 5500, TRUE, FALSE, 4, 'anticuchos.jpg', 1, 17),
+  (20, 'Hamburguesa Carlos', 'Hamburguesa con queso cheddar, tocino y papas fritas', '15 minutos', NULL, 6900, TRUE, FALSE, 5, 'hamburguesa.jpg', 1, 18),
+  (21, 'Pollo a la Plancha', 'Pechuga de pollo a la plancha con guarnición', '20 minutos', NULL, 6200, TRUE, FALSE, 4, 'pollo_plancha.jpg', 1, 18),
+  (22, 'Papas Fritas con Salsas', 'Papas fritas crocantes con salsas a elección', '10 minutos', NULL, 3500, TRUE, FALSE, 3, 'papas_fritas.jpg', 1, 18),
+  (23, 'Parrillada Criolla', 'Selección de carnes a la parrilla para compartir', '35 minutos', NULL, 15900, TRUE, FALSE, 5, 'parrillada.jpg', 1, 19),
+  (24, 'Empanadas Criollas', 'Empanadas fritas de pino, por unidad', '10 minutos', NULL, 2000, TRUE, FALSE, 4, 'empanadas.jpg', 1, 19),
+  (25, 'Cazuela de Ave Penka', 'Cazuela campesina con ave y verduras de estación', '25 minutos', NULL, 6800, TRUE, FALSE, 4, 'cazuela_ave.jpg', 1, 19);
 
 -- Usuarios de prueba (contraseña real: admin01 / alondra01 — hash bcrypt, nunca texto plano).
 INSERT INTO usuarios (nombre, email, password, estado, rol) VALUES
-  ('Administrador', 'admin@gmail.com', '$2a$12$5lGECElf9cYkU//U4/aF6.6Ee7BUNWwoqEe3o7Dbjw0447VY8E3Ie', '1', 'admin'),
-  ('Alondra', 'alondra@gmail.com', '$2a$12$YWQyxSdkqW/joBBf4XkXueBz8cdDFH8nHqf3mP.9DKSElUVzfnhR6', '1', 'cliente');
+  ('Administrador', 'admin@gmail.com', '$2a$12$4KVxXhdbPERGV.Iw92dZDO5Tg6YNLCYkKHUFGHTRdULMMc7p9Wz6a', '1', 'admin'),
+  ('Alondra', 'alondra@gmail.com', '$2a$12$.gGFqAX.1NWZDSOofTLWve/AAHlM5KI234DhkjX67SXn1.Y6ZN3H.', '1', 'cliente');
 
 -- Reajusta las secuencias SERIAL (los INSERT de arriba usan IDs explícitos).
 SELECT setval(pg_get_serial_sequence('direcciones', 'id'), (SELECT MAX(id) FROM direcciones));
