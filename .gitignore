@@ -1,0 +1,10 @@
+node_modules/
+dist/
+src/public/js/dist/
+.env
+.env.dev
+.env.qa
+.env.prod
+*.log
+npm-debug.log*
+.DS_Store
