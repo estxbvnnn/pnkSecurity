@@ -7,10 +7,9 @@ const PgSession = connectPgSimple(session);
 
 /**
  * Sesión respaldada por PostgreSQL (tabla "session", se crea sola la primera
- * vez con createTableIfMissing), en vez del MemoryStore por defecto de
- * express-session. Centraliza y hace consistente el manejo de sesión en un
- * único lugar — equivalente a la corrección de session_start() disperso e
- * inconsistente, centralizado en setup.php.
+ * vez con createTableIfMissing). Equivalente a VUL-16/18 del informe
+ * pnkSecurity: cookie HttpOnly + SameSite=Strict (+ Secure si hay HTTPS),
+ * nombre de cookie propio, inicializada una sola vez y de forma centralizada.
  */
 export const sessionMiddleware = session({
   store: new PgSession({ pool, tableName: "session", createTableIfMissing: true }),
@@ -18,4 +17,10 @@ export const sessionMiddleware = session({
   secret: env.session.secret,
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: env.session.secureCookie,
+    maxAge: 1000 * 60 * 60 * 4, // 4 horas
+  },
 });
