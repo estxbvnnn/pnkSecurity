@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { obtenerItemParaCarrito } from "../models/itemModel";
+import { crearPedido } from "../models/pedidoModel";
 import { idValido } from "../utils/validar";
 
 export async function agregar(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -47,4 +48,25 @@ export function mostrar(req: Request, res: Response): void {
     carrito: req.session.carrito ?? [],
     csrfToken: req.session.csrfToken,
   });
+}
+
+/** Confirma el carrito actual como una venta real (tabla pedidos/detalle_pedido). */
+export async function confirmar(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const restauranteId = idValido(req.session.restauranteId) ?? 1;
+    const carrito = req.session.carrito ?? [];
+
+    if (!carrito.length) {
+      res.redirect("/carrito?error=vacio");
+      return;
+    }
+
+    const clienteNombre = req.session.nombre ?? "Invitado";
+    const pedido = await crearPedido(restauranteId, clienteNombre, carrito);
+    req.session.carrito = [];
+
+    res.render("pedido-confirmado", { restauranteId, pedido });
+  } catch (err) {
+    next(err);
+  }
 }

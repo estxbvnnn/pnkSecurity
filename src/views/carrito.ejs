@@ -41,7 +41,18 @@
         <% }); %>
       </tbody>
     </table>
-    <h3 class="text-center">¡Si estás listo con tu pedido, llama al garzón para solicitarlo!</h3>
+    <h3 class="text-center">
+      Total: $ <%= Number(carrito.reduce(function(s, i) { return s + Number(i.precio); }, 0)).toLocaleString('es-CL') %>
+    </h3>
+    <% if (carrito.length) { %>
+      <form id="formConfirmarPedido" class="text-center" method="post" action="/carrito/confirmar">
+        <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-success btn-lg">✅ Confirmar Pedido</button>
+      </form>
+      <p class="text-center text-muted mt-2">o avísale directamente al garzón para solicitarlo.</p>
+    <% } else { %>
+      <h5 class="text-center text-muted">Tu carrito está vacío.</h5>
+    <% } %>
   </div>
 </section>
 
