@@ -1,5 +1,20 @@
 import { pool } from "../config/db";
-import { ItemAdmin, ItemInput } from "../types/models";
+import { ItemAdmin, ItemCarrito, ItemInput } from "../types/models";
+
+export async function obtenerItemParaCarrito(id: number): Promise<Omit<ItemCarrito, "posicion"> | null> {
+  const { rows } = await pool.query<{ id: number; nombre: string; precio: number }>(
+    `SELECT id, nombre, precio
+       FROM items
+      WHERE id = $1 AND visible = TRUE AND eliminado IS NULL
+      LIMIT 1`,
+    [id]
+  );
+  return rows[0] ?? null;
+}
+
+// ---------------------------------------------------------------------
+// Operaciones de administración (requieren rol admin — ver middlewares/auth.ts)
+// ---------------------------------------------------------------------
 
 /** Ítems de una categoría, incluidos los ocultos — vista admin. */
 export async function listarItemsAdminPorCategoria(categoriaId: number): Promise<ItemAdmin[]> {
