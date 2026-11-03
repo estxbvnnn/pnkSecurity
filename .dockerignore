@@ -1,0 +1,12 @@
+node_modules
+dist
+src/public/js/dist
+npm-debug.log*
+.git
+.gitignore
+.env
+.env.*
+!.env.*.example
+README.md
+*.md
+db/init.sql.bak

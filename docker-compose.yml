@@ -1,0 +1,123 @@
+# Carta Digital — 3 ambientes aislados (Desarrollo / QA / Producción).
+# Cada ambiente tiene su propia app, su propio Postgres, su propia red y sus
+# propios volúmenes (datos de BD + imágenes subidas por el admin). No
+# comparten nada entre sí, así que se pueden levantar por separado sin
+# interferir unos con otros.
+#
+# Uso (un ambiente a la vez: el servidor real tiene poca RAM):
+#   docker compose up -d --build app-dev db-dev
+#   docker compose up -d --build app-qa db-qa
+#   docker compose up -d --build app-prod db-prod
+#
+# Cada ambiente necesita su archivo de variables (.env.dev / .env.qa / .env.prod),
+# copiado desde .env.docker.example. Nunca se versionan (ver .gitignore).
+
+services:
+  # ---------------------------------------------------------------- DESARROLLO
+  db-dev:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env.dev
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks: [red_dev]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app-dev:
+    build: .
+    restart: unless-stopped
+    env_file: .env.dev
+    environment:
+      NODE_ENV: development
+      PGHOST: db-dev
+      PGPORT: 5432
+    ports:
+      - "3001:3000"
+    volumes:
+      - imagenes_dev:/app/dist/public/imagenes
+    networks: [red_dev]
+    depends_on:
+      db-dev:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------- QA
+  db-qa:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env.qa
+    volumes:
+      - pgdata_qa:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks: [red_qa]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app-qa:
+    build: .
+    restart: unless-stopped
+    env_file: .env.qa
+    environment:
+      NODE_ENV: production
+      PGHOST: db-qa
+      PGPORT: 5432
+    ports:
+      - "3002:3000"
+    volumes:
+      - imagenes_qa:/app/dist/public/imagenes
+    networks: [red_qa]
+    depends_on:
+      db-qa:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------- PRODUCCIÓN
+  db-prod:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env.prod
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks: [red_prod]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app-prod:
+    build: .
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      NODE_ENV: production
+      PGHOST: db-prod
+      PGPORT: 5432
+    ports:
+      - "3003:3000"
+    volumes:
+      - imagenes_prod:/app/dist/public/imagenes
+    networks: [red_prod]
+    depends_on:
+      db-prod:
+        condition: service_healthy
+
+networks:
+  red_dev:
+  red_qa:
+  red_prod:
+
+volumes:
+  pgdata_dev:
+  pgdata_qa:
+  pgdata_prod:
+  imagenes_dev:
+  imagenes_qa:
+  imagenes_prod:
