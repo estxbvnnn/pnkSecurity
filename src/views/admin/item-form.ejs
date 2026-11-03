@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title><%= item ? 'Editar' : 'Nuevo' %> producto</title>
+  <link rel="stylesheet" href="/vendors/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendors/themify-icons/themify-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="admin-body" data-form-error="<%= error || '' %>">
+
+<nav class="admin-bar d-flex justify-content-between align-items-center">
+  <div class="admin-brand">
+    <i class="ti-<%= item ? 'pencil' : 'plus' %>"></i> <%= item ? 'Editar' : 'Nuevo' %> producto
+  </div>
+  <a class="btn btn-sm btn-outline-light" href="/admin?id=<%= restauranteId %>">
+    <i class="ti-arrow-left"></i> Volver al panel
+  </a>
+</nav>
+
+<div class="container contendor my-4" style="max-width:680px">
+  <div class="admin-form-card">
+    <form method="post" enctype="multipart/form-data" action="<%= item ? '/admin/items/' + item.id : '/admin/items' %>">
+      <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+
+      <div class="form-group mb-3">
+        <label>Foto del producto <% if (!item) { %><span class="text-danger">*</span><% } %></label>
+        <% if (item && item.foto) { %>
+          <div class="mb-2">
+            <img src="/imagenes/cod<%= restauranteId %>/<%= item.foto %>" alt="Foto actual"
+                 style="max-width:140px;max-height:140px;border-radius:8px;border:1px solid var(--admin-border);display:block">
+          </div>
+        <% } %>
+        <input type="file" class="form-control" name="foto" accept="image/jpeg,image/png,image/webp,image/gif"
+               <%= !item ? 'required' : '' %>>
+        <small class="text-muted">
+          JPG, PNG, WEBP o GIF, máx. 5 MB.
+          <% if (item) { %>Dejar vacío para mantener la foto actual.<% } %>
+        </small>
+      </div>
+
+      <div class="form-group mb-3">
+        <label>Categoría</label>
+        <select class="form-control" name="categoriaId" required>
+          <% categoriasPorCarta.forEach(function(cc) { %>
+            <optgroup label="<%= cc.carta.nombre %>">
+              <% cc.categorias.forEach(function(cat) { %>
+                <option value="<%= cat.id %>" <%= item && item.categoriaId === cat.id ? 'selected' : '' %>>
+                  <%= cat.nombre %>
+                </option>
+              <% }); %>
+            </optgroup>
+          <% }); %>
+        </select>
+      </div>
+
+      <div class="form-group mb-3">
+        <label>Nombre</label>
+        <input type="text" class="form-control" name="nombre" maxlength="100" required
+               value="<%= item ? item.nombre : '' %>">
+      </div>
+
+      <div class="form-group mb-3">
+        <label>Descripción</label>
+        <input type="text" class="form-control" name="descripcion" maxlength="300"
+               value="<%= item ? (item.descripcion || '') : '' %>">
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label>Precio (CLP)</label>
+          <input type="number" class="form-control" name="precio" min="0" max="99999999" required
+                 value="<%= item ? item.precio : '' %>">
+        </div>
+        <div class="col">
+          <label>Tiempo de preparación</label>
+          <input type="text" class="form-control" name="tiempo" maxlength="100"
+                 value="<%= item ? (item.tiempo || '') : '' %>" placeholder="ej. 15 minutos">
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col">
+          <label>Puntuación (0 a 5)</label>
+          <input type="number" class="form-control" name="puntuacion" min="0" max="5"
+                 value="<%= item ? item.puntuacion : 0 %>">
+        </div>
+        <div class="col">
+          <label>Observaciones</label>
+          <input type="text" class="form-control" name="observaciones" maxlength="300"
+                 value="<%= item ? (item.observaciones || '') : '' %>">
+        </div>
+      </div>
+
+      <div class="form-check mb-2">
+        <input type="checkbox" class="form-check-input" id="destacado" name="destacado"
+               <%= item && item.destacado ? 'checked' : '' %>>
+        <label class="form-check-label" for="destacado">⭐ Destacado (aparece en "Menús Destacados")</label>
+      </div>
+
+      <div class="form-check mb-4">
+        <input type="checkbox" class="form-check-input" id="visible" name="visible"
+               <%= !item || item.visible ? 'checked' : '' %>>
+        <label class="form-check-label" for="visible">Visible en la carta</label>
+      </div>
+
+      <button type="submit" class="btn btn-admin-primary">
+        <i class="ti-check"></i> <%= item ? 'Guardar cambios' : 'Crear producto' %>
+      </button>
+      <a class="btn btn-outline-secondary" href="/admin?id=<%= restauranteId %>">Cancelar</a>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>
