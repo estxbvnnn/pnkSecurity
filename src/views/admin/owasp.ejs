@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapeo OWASP Top 10 — Administración</title>
+  <link rel="stylesheet" href="/vendors/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="/vendors/themify-icons/themify-icons.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/custom.css">
+  <style>
+    .owasp-codigo { display:inline-block; min-width:92px; font-weight:700; color:#fff;
+      background:var(--admin-navy); border-radius:6px; padding:2px 8px; font-size:0.85rem; margin-right:8px; }
+    .owasp-puntos { margin:10px 0 0 0; padding-left:1.1rem; }
+    .owasp-puntos li { margin-bottom:6px; }
+    .owasp-riesgo { margin-top:10px; padding:10px 12px; background:#fff8e1; border-left:4px solid #d4af37;
+      border-radius:4px; font-size:0.92rem; }
+    .owasp-puntos code, .owasp-riesgo code { background:#eef1f4; padding:1px 5px; border-radius:4px; font-size:0.88em; }
+  </style>
+</head>
+<body class="admin-body">
+
+<nav class="admin-bar d-flex justify-content-between align-items-center">
+  <div class="admin-brand"><i class="ti-shield"></i> Mapeo OWASP Top 10 (2021)</div>
+  <a class="btn btn-sm btn-outline-light" href="/admin"><i class="ti-arrow-left"></i> Volver al panel</a>
+</nav>
+
+<div class="container contendor my-4" style="max-width:860px">
+  <p class="text-muted">
+    Por cada categoría del OWASP Top 10 se indica qué control existe en el código y dónde está.
+    Informe completo con evidencia archivo:línea en <code>docs/OWASP.md</code> del repositorio.
+  </p>
+
+  <% secciones.forEach(function(s) { %>
+    <div class="admin-section mb-3">
+      <div class="admin-section-header" style="cursor:default">
+        <span class="titulo">
+          <span class="owasp-codigo"><%= s.codigo %></span> <%= s.titulo %>
+        </span>
+      </div>
+      <div class="p-3">
+        <ul class="owasp-puntos">
+          <% s.puntosHtml.forEach(function(p) { %>
+            <li><%- p %></li>
+          <% }); %>
+        </ul>
+        <% if (s.riesgoAceptadoHtml) { %>
+          <div class="owasp-riesgo">
+            <i class="ti-info-alt"></i> <strong>Riesgo aceptado / pendiente:</strong> <%- s.riesgoAceptadoHtml %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  <% }); %>
+
+  <div class="admin-section">
+    <div class="admin-section-header" style="cursor:default">
+      <span class="titulo"><i class="ti-check-box"></i> Brechas cerradas en esta fase (antes no existían)</span>
+    </div>
+    <div class="p-3">
+      <ol class="owasp-puntos">
+        <% brechasCerradas.forEach(function(b) { %>
+          <li><%- b %></li>
+        <% }); %>
+      </ol>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

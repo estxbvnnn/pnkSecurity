@@ -29,6 +29,7 @@ import {
   activar as activar2fa,
   desactivar as desactivar2fa,
 } from "../controllers/seguridadController";
+import { mostrarOwasp } from "../controllers/owaspController";
 
 export const adminRouter = Router();
 
@@ -94,3 +95,6 @@ adminRouter.get("/seguridad", mostrarSeguridad);
 adminRouter.post("/seguridad/2fa/generar", csrfValidar, generar2fa);
 adminRouter.post("/seguridad/2fa/activar", csrfValidar, activar2fa);
 adminRouter.post("/seguridad/2fa/desactivar", csrfValidar, desactivar2fa);
+
+// --- Informe de seguridad: mapeo OWASP Top 10 ---
+adminRouter.get("/owasp", mostrarOwasp);

@@ -2,6 +2,8 @@
 
 Mismo objetivo que el informe de remediación de `pnkSecurity` (PHP), pero aplicado a esta reimplementación: por cada categoría del OWASP Top 10 se indica **qué control existe**, **dónde está** (archivo:línea) y, si corresponde, **qué riesgo queda documentado como aceptado** por alcance del proyecto.
 
+Este mismo mapeo (versión resumida) también está disponible dentro del panel de administración en `/admin/owasp` (ver `src/controllers/owaspController.ts` y `src/views/admin/owasp.ejs`).
+
 ---
 
 ## A01:2021 — Broken Access Control
