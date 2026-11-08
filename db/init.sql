@@ -130,7 +130,8 @@ INSERT INTO restaurantes (id, rut, nombre, fono, foto, email, direccion_id) VALU
   (3, '22334455-6', 'La Esquina del Sabor', '22334455', 'resto3.jpg', 'mail2@correo.cl', 4),
   (4, '258-3', 'La Pica de Armando', '223366', 'resto4.jpg', 'mail3@correo.cl', 5),
   (5, '258-9', 'Donde Carlos', '336699', 'resto5.jpg', 'mail4@correo.cl', 6),
-  (6, '258-6', 'RestoPenka', '336699', 'resto6.jpg', 'mail5@correo.cl', 7);
+  (6, '258-6', 'RestoPenka', '336699', 'resto6.jpg', 'mail5@correo.cl', 7),
+  (7, '369-5', 'La Pica de Carolina', '336699', 'resto7.jpg', 'mail6@correo.cl', 8);
 
 INSERT INTO cartas (id, nombre, orden, visible, foto, restaurante_id) VALUES
   (1, 'Vinos', 1, TRUE, 'carta2.jpg', 1),
@@ -147,7 +148,8 @@ INSERT INTO cartas (id, nombre, orden, visible, foto, restaurante_id) VALUES
   (13, 'Platos', 1, TRUE, NULL, 3),
   (14, 'Comidas', 1, TRUE, NULL, 4),
   (15, 'Carta', 1, TRUE, NULL, 5),
-  (16, 'Platos Típicos', 1, TRUE, NULL, 6);
+  (16, 'Platos Típicos', 1, TRUE, NULL, 6),
+  (17, 'Comida Casera', 1, TRUE, NULL, 7);
 
 INSERT INTO categorias (id, nombre, visible, orden, carta_id) VALUES
   (1, 'Blancos', TRUE, 1, 1),
@@ -168,11 +170,12 @@ INSERT INTO categorias (id, nombre, visible, orden, carta_id) VALUES
   (16, 'Principales', TRUE, 1, 13),
   (17, 'A la Parrilla', TRUE, 1, 14),
   (18, 'Platos de Fondo', TRUE, 1, 15),
-  (19, 'Parrilla Criolla', TRUE, 1, 16);
+  (19, 'Parrilla Criolla', TRUE, 1, 16),
+  (20, 'Platos de la Casa', TRUE, 1, 17);
 
 INSERT INTO items (id, nombre, descripcion, tiempo, observaciones, precio, visible, destacado, puntuacion, foto, orden, categoria_id) VALUES
   (1, 'Ensalada Cesar', 'Ensalada con queso', '15 minutos', '', 3500, TRUE, FALSE, 4, 'item1.jpg', 1, 7),
-  (2, 'Crema de espinacas', 'Crema a base de espinacas y finas hierbas', '20 minutos', '', 2000, TRUE, TRUE, 4, '38b987d5f7d33e38adff84741c533b6f.jpg', 2, 8),
+  (2, 'Crema de espinacas', 'Crema a base de espinacas y finas hierbas', '20 minutos', '', 2000, TRUE, TRUE, 4, '598a694e4879774af73912a3f8e38767.jpg', 2, 8),
   (4, 'Pisco Sour', 'Pisco sour casero', '15 minutos', '', 3500, TRUE, FALSE, 0, 'item4.jpg', 0, 10),
   (5, 'Lomo a lo Pobre', 'Lomo con papas fritas, huevo y cebolla', '30 minutos', 'Muy sabroso', 12500, TRUE, TRUE, 5, 'item5.jpg', 1, 3),
   (7, 'Lomo a lo Pobre', 'Lomo a lo Pobre', '20 minutos', 'Rico Lomo a lo Pobre', 9900, TRUE, TRUE, 3, 'item3.jpg', 2, 3),
@@ -191,7 +194,10 @@ INSERT INTO items (id, nombre, descripcion, tiempo, observaciones, precio, visib
   (22, 'Papas Fritas con Salsas', 'Papas fritas crocantes con salsas a elección', '10 minutos', NULL, 3500, TRUE, FALSE, 3, 'papas_fritas.jpg', 1, 18),
   (23, 'Parrillada Criolla', 'Selección de carnes a la parrilla para compartir', '35 minutos', NULL, 15900, TRUE, FALSE, 5, 'parrillada.jpg', 1, 19),
   (24, 'Empanadas Criollas', 'Empanadas fritas de pino, por unidad', '10 minutos', NULL, 2000, TRUE, FALSE, 4, 'empanadas.jpg', 1, 19),
-  (25, 'Cazuela de Ave Penka', 'Cazuela campesina con ave y verduras de estación', '25 minutos', NULL, 6800, TRUE, FALSE, 4, 'cazuela_ave.jpg', 1, 19);
+  (25, 'Cazuela de Ave Penka', 'Cazuela campesina con ave y verduras de estación', '25 minutos', NULL, 6800, TRUE, FALSE, 4, 'cazuela_ave.jpg', 1, 19),
+  (26, 'Pollo al Horno Casero', 'Pollo asado al horno con hierbas, estilo casero', '40 minutos', NULL, 7200, TRUE, FALSE, 5, 'pollo_carolina.jpg', 1, 20),
+  (27, 'Sopa de Lentejas Casera', 'Lentejas guisadas con verduras, receta de la casa', '25 minutos', NULL, 4500, TRUE, FALSE, 4, 'lentejas_carolina.jpg', 1, 20),
+  (28, 'Pastel de Choclo', 'Pastel de choclo tradicional chileno con pino', '35 minutos', NULL, 6500, TRUE, FALSE, 5, 'pastel_choclo_carolina.jpg', 1, 20);
 
 -- Usuarios de prueba (contraseña real: admin01 / alondra01 — hash bcrypt, nunca texto plano).
 INSERT INTO usuarios (nombre, email, password, estado, rol) VALUES
