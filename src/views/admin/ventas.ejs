@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
   <title>Ventas — <%= general ? 'General' : (restaurante ? restaurante.nombre : '') %></title>
   <link rel="stylesheet" href="/vendors/bootstrap/bootstrap.min.css">
   <link rel="stylesheet" href="/vendors/themify-icons/themify-icons.css">

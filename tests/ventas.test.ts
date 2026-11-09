@@ -1,7 +1,7 @@
 import request from "supertest";
 import { createApp } from "../src/app";
 import { pool } from "../src/config/db";
-import { csrfDeFormulario } from "./helpers";
+import { csrfDeFormulario, csrfDeMeta } from "./helpers";
 
 // Archivo propio (y por lo tanto su propia instancia de `app`/rate-limiter en
 // memoria) por el mismo motivo que rateLimiter.test.ts: cada test que hace
@@ -59,8 +59,12 @@ describe("Ventas: estado de pedido y panel General", () => {
     );
     const pedidoId = rows[0].id;
 
+    // El restaurante 2 no tiene pedidos propios en este punto, así que la
+    // página de Ventas no renderiza ningún formulario por fila (solo
+    // "Sin pedidos todavía") — el token se saca del <meta>, que siempre
+    // está presente, igual que en el caso del carrito vacío.
     const ventas = await agent.get("/admin/ventas");
-    const csrf = csrfDeFormulario(ventas.text);
+    const csrf = csrfDeMeta(ventas.text);
 
     // El admin está "parado" en el restaurante 2, pero el pedido es del 1:
     // el intento no debe tener efecto (filtro por restaurante en el UPDATE).
