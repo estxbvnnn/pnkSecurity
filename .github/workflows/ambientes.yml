@@ -18,18 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generar .env.dev
-        run: |
-          cat > .env.dev <<EOF
-          POSTGRES_DB=carta_digital
-          POSTGRES_USER=carta_app
-          POSTGRES_PASSWORD=dev_ci_password
-          PGDATABASE=carta_digital
-          PGUSER=carta_app
-          PGPASSWORD=dev_ci_password
-          SESSION_SECRET=ci_dev_secret_$(openssl rand -hex 16)
-          SESSION_SECURE_COOKIE=false
-          EOF
+      # docker-compose.yml define los 3 ambientes en un solo archivo, cada
+      # uno con su propio env_file (.env.dev/.env.qa/.env.prod, nunca
+      # versionados). Cualquier comando de Compose que toque el proyecto
+      # completo (ej. "down" sin filtrar por servicio) necesita poder
+      # resolver los 3, aunque este job solo use .env.dev — por eso se
+      # generan los 3 como placeholders.
+      - name: Generar los 3 .env (placeholders de CI)
+        run: for amb in dev qa prod; do cp .env.docker.example ".env.$amb"; done
 
       - name: Construir y levantar app-dev + db-dev
         run: docker compose up -d --build app-dev db-dev
@@ -53,6 +49,24 @@ jobs:
   ambiente-qa:
     name: "Ambiente: QA"
     runs-on: ubuntu-latest
+    # Postgres para la suite de pruebas funcionales (npm test). Las
+    # credenciales coinciden con los valores por defecto de
+    # tests/env.setup.ts (los mismos que usa el pipeline de Jenkins), así
+    # que no hace falta pasar TEST_PG* explícitamente.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: carta_digital_test
+          POSTGRES_USER: carta_test
+          POSTGRES_PASSWORD: jenkins_test_only_2026
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U carta_test -d carta_digital_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -67,18 +81,8 @@ jobs:
       - name: Pruebas funcionales de QA (generadas con IA, ver tests/README.md)
         run: npm test
 
-      - name: Generar .env.qa
-        run: |
-          cat > .env.qa <<EOF
-          POSTGRES_DB=carta_digital
-          POSTGRES_USER=carta_app
-          POSTGRES_PASSWORD=qa_ci_password
-          PGDATABASE=carta_digital
-          PGUSER=carta_app
-          PGPASSWORD=qa_ci_password
-          SESSION_SECRET=ci_qa_secret_$(openssl rand -hex 16)
-          SESSION_SECURE_COOKIE=false
-          EOF
+      - name: Generar los 3 .env (placeholders de CI)
+        run: for amb in dev qa prod; do cp .env.docker.example ".env.$amb"; done
 
       - name: Construir y levantar app-qa + db-qa
         run: docker compose up -d --build app-qa db-qa
@@ -105,6 +109,9 @@ jobs:
     needs: [ambiente-desarrollo, ambiente-qa]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Generar los 3 .env (placeholders de CI)
+        run: for amb in dev qa prod; do cp .env.docker.example ".env.$amb"; done
 
       # Producción no se levanta aquí: usa network_mode: host + el Postgres
       # NATIVO del servidor real (ver docker-compose.yml), algo que no existe
