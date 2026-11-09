@@ -91,8 +91,8 @@ export async function listarPedidosRecientes(restauranteId: number | null, limit
 
 /** Igual que arriba: restauranteId === null => estadísticas de TODOS los restaurantes juntos. */
 export async function estadisticasVentas(restauranteId: number | null): Promise<EstadisticasVentas> {
-  const filtroRestaurante = restauranteId !== null ? "AND p.restaurante_id = $2" : "";
-  const filtroRestaurantePlano = restauranteId !== null ? "AND restaurante_id = $2" : "";
+  const filtroRestaurante = restauranteId !== null ? "AND p.restaurante_id = $1" : "";
+  const filtroRestaurantePlano = restauranteId !== null ? "AND restaurante_id = $1" : "";
   const params = restauranteId !== null ? [restauranteId] : [];
 
   const { rows: totales } = await pool.query<{ total: string; cantidad: string }>(
