@@ -118,14 +118,23 @@ export interface ItemCarrito {
   id: number;
   nombre: string;
   precio: number;
+  restauranteId: number;
+  restauranteNombre: string;
 }
+
+/** Estados posibles de un pedido (editable desde el panel de Ventas). */
+export const ESTADOS_PEDIDO = ["revision", "confirmado", "entregado", "cancelado"] as const;
+export type EstadoPedido = (typeof ESTADOS_PEDIDO)[number];
 
 export interface Pedido {
   id: number;
   clienteNombre: string;
   total: number;
-  estado: string;
+  estado: EstadoPedido;
   creado: Date;
+  // Solo presente en el panel "General" (todos los restaurantes), donde cada
+  // fila puede ser de un restaurante distinto.
+  restauranteNombre?: string;
 }
 
 export interface EstadisticasVentas {
@@ -134,6 +143,8 @@ export interface EstadisticasVentas {
   ticketPromedio: number;
   topProductos: { nombre: string; cantidadVendida: number; totalRecaudado: number }[];
   ventasPorDia: { fecha: string; total: number }[];
+  // Solo presente en el panel "General": desglose de ventas por restaurante.
+  ventasPorRestaurante?: { restauranteId: number; restauranteNombre: string; total: number; pedidos: number }[];
 }
 
 // Augmenta express-session con los datos propios de la app.

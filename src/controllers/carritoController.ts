@@ -19,7 +19,14 @@ export async function agregar(req: Request, res: Response, next: NextFunction): 
 
     if (!req.session.carrito) req.session.carrito = [];
     const posicion = req.session.carrito.length + 1;
-    req.session.carrito.push({ posicion, id: item.id, nombre: item.nombre, precio: item.precio });
+    req.session.carrito.push({
+      posicion,
+      id: item.id,
+      nombre: item.nombre,
+      precio: item.precio,
+      restauranteId: item.restauranteId,
+      restauranteNombre: item.restauranteNombre,
+    });
 
     res.json({ ok: true, posicion });
   } catch (err) {
@@ -50,10 +57,16 @@ export function mostrar(req: Request, res: Response): void {
   });
 }
 
-/** Confirma el carrito actual como una venta real (tabla pedidos/detalle_pedido). */
+/**
+ * Confirma el carrito actual como venta(s) real(es). El carrito puede traer
+ * ítems de varios restaurantes (se agregó uno en el restaurante 1, después
+ * se navegó al restaurante 2 y se agregó otro) — cada restaurante representado
+ * en el carrito se agrupa y se confirma como SU PROPIO pedido (tabla
+ * pedidos/detalle_pedido), para que las Ventas de cada restaurante queden
+ * correctas. No se mezclan items de distintos restaurantes en un mismo pedido.
+ */
 export async function confirmar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const restauranteId = idValido(req.session.restauranteId) ?? 1;
     const carrito = req.session.carrito ?? [];
 
     if (!carrito.length) {
@@ -61,11 +74,28 @@ export async function confirmar(req: Request, res: Response, next: NextFunction)
       return;
     }
 
+    const restauranteIdActual = idValido(req.session.restauranteId) ?? 1;
     const clienteNombre = req.session.nombre ?? "Invitado";
-    const pedido = await crearPedido(restauranteId, clienteNombre, carrito);
+
+    const porRestaurante = new Map<number, { nombre: string; items: typeof carrito }>();
+    for (const item of carrito) {
+      const grupo = porRestaurante.get(item.restauranteId);
+      if (grupo) {
+        grupo.items.push(item);
+      } else {
+        porRestaurante.set(item.restauranteId, { nombre: item.restauranteNombre, items: [item] });
+      }
+    }
+
+    const pedidos = [];
+    for (const [restauranteId, grupo] of porRestaurante) {
+      const pedido = await crearPedido(restauranteId, clienteNombre, grupo.items);
+      pedidos.push({ ...pedido, restauranteId, restauranteNombre: grupo.nombre });
+    }
+
     req.session.carrito = [];
 
-    res.render("pedido-confirmado", { restauranteId, pedido });
+    res.render("pedido-confirmado", { restauranteId: restauranteIdActual, pedidos });
   } catch (err) {
     next(err);
   }

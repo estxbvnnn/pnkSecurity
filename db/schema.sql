@@ -110,7 +110,7 @@ CREATE TABLE pedidos (
   restaurante_id  INTEGER NOT NULL REFERENCES restaurantes(id),
   cliente_nombre  VARCHAR(255) NOT NULL,
   total           INTEGER NOT NULL,
-  estado          VARCHAR(20) NOT NULL DEFAULT 'confirmado', -- 'confirmado' | 'cancelado'
+  estado          VARCHAR(20) NOT NULL DEFAULT 'confirmado', -- 'revision' | 'confirmado' | 'entregado' | 'cancelado'
   creado          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -130,19 +130,23 @@ INSERT INTO direcciones (calle, numero, comuna, region) VALUES
   ('Los Arandanos', '1550', 'La Serena', 'Coquimbo');
 
 INSERT INTO restaurantes (rut, nombre, fono, foto, email, direccion_id) VALUES
-  ('99887766-5', 'Afríca Restobar', '22334455', 'resto1.jpg', 'mail@correo.cl', 1);
+  ('99887766-5', 'Afríca Restobar', '22334455', 'resto1.jpg', 'mail@correo.cl', 1),
+  ('11223344-6', 'Bahía Restaurant', '22998877', 'resto2.jpg', 'mail2@correo.cl', 1);
 
 INSERT INTO cartas (nombre, orden, visible, foto, restaurante_id) VALUES
   ('Entradas', 1, TRUE, 'carta3.jpg', 1),
-  ('Principales', 2, TRUE, 'carta6.jpg', 1);
+  ('Principales', 2, TRUE, 'carta6.jpg', 1),
+  ('Carta', 1, TRUE, 'carta7.jpg', 2);
 
 INSERT INTO categorias (nombre, visible, orden, carta_id) VALUES
   ('Frías', TRUE, 1, 1),
-  ('Carnes', TRUE, 1, 2);
+  ('Carnes', TRUE, 1, 2),
+  ('Mariscos', TRUE, 1, 3);
 
 INSERT INTO items (nombre, descripcion, tiempo, precio, visible, destacado, puntuacion, foto, categoria_id) VALUES
   ('Ensalada Cesar', 'Ensalada con queso', '15 minutos', 3500, TRUE, FALSE, 4, 'item1.jpg', 1),
-  ('Lomo a lo Pobre', 'Lomo con papas fritas, huevo y cebolla', '30 minutos', 12500, TRUE, TRUE, 5, 'item5.jpg', 2);
+  ('Lomo a lo Pobre', 'Lomo con papas fritas, huevo y cebolla', '30 minutos', 12500, TRUE, TRUE, 5, 'item5.jpg', 2),
+  ('Ceviche', 'Ceviche de pescado fresco', '20 minutos', 7500, TRUE, FALSE, 4, 'item2.jpg', 3);
 
 -- Los usuarios (admin@gmail.com / alondra@gmail.com) se crean con `npm run seed`
 -- (hashea las contraseñas con bcrypt antes de insertarlas).

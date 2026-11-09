@@ -2,10 +2,20 @@ import { pool } from "../config/db";
 import { ItemAdmin, ItemCarrito, ItemInput } from "../types/models";
 
 export async function obtenerItemParaCarrito(id: number): Promise<Omit<ItemCarrito, "posicion"> | null> {
-  const { rows } = await pool.query<{ id: number; nombre: string; precio: number }>(
-    `SELECT id, nombre, precio
-       FROM items
-      WHERE id = $1 AND visible = TRUE AND eliminado IS NULL
+  const { rows } = await pool.query<{
+    id: number;
+    nombre: string;
+    precio: number;
+    restauranteId: number;
+    restauranteNombre: string;
+  }>(
+    `SELECT i.id, i.nombre, i.precio,
+            r.id AS "restauranteId", r.nombre AS "restauranteNombre"
+       FROM items i
+       JOIN categorias c ON c.id = i.categoria_id
+       JOIN cartas ca ON ca.id = c.carta_id
+       JOIN restaurantes r ON r.id = ca.restaurante_id
+      WHERE i.id = $1 AND i.visible = TRUE AND i.eliminado IS NULL
       LIMIT 1`,
     [id]
   );

@@ -58,6 +58,39 @@ describe("Carrito y checkout", () => {
     expect(carritoVacio.text).toContain("Tu carrito está vacío");
   });
 
+  it("un carrito con ítems de 2 restaurantes distintos crea un pedido separado por cada restaurante", async () => {
+    const agent = request.agent(app);
+    const home = await agent.get("/restaurante/1");
+    const csrfMeta = csrfDeMeta(home.text);
+
+    // Ítem 1 (Ensalada Cesar) es del restaurante 1; ítem 3 (Ceviche) es del
+    // restaurante 2 — se agregan los dos al mismo carrito de sesión.
+    await agent.post("/carrito/agregar").set("X-CSRF-Token", csrfMeta).send({ itemId: 1, csrfToken: csrfMeta });
+    await agent.post("/carrito/agregar").set("X-CSRF-Token", csrfMeta).send({ itemId: 3, csrfToken: csrfMeta });
+
+    const carrito = await agent.get("/carrito");
+    expect(carrito.text).toContain("Ensalada Cesar");
+    expect(carrito.text).toContain("Ceviche");
+    expect(carrito.text).toContain("restaurantes distintos");
+    const csrfForm = csrfDeFormulario(carrito.text);
+
+    const confirmar = await agent.post("/carrito/confirmar").type("form").send({ csrfToken: csrfForm });
+    expect(confirmar.status).toBe(200);
+    expect(confirmar.text).toContain("¡Pedidos confirmados!");
+
+    const { rows } = await pool.query(
+      `SELECT p.restaurante_id, dp.nombre
+         FROM pedidos p
+         JOIN detalle_pedido dp ON dp.pedido_id = p.id
+        WHERE p.creado > NOW() - INTERVAL '1 minute'
+        ORDER BY p.id DESC
+        LIMIT 2`
+    );
+    const porRestaurante = new Map(rows.map((r) => [r.nombre, r.restaurante_id]));
+    expect(porRestaurante.get("Ensalada Cesar")).toBe(1);
+    expect(porRestaurante.get("Ceviche")).toBe(2);
+  });
+
   it("confirmar un carrito vacío no crea un pedido (validación server-side: la vista ni siquiera muestra el botón)", async () => {
     const agent = request.agent(app);
     await agent.get("/restaurante/1");

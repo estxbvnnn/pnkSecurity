@@ -1,5 +1,5 @@
 import { pool } from "../config/db";
-import { EstadisticasVentas, ItemCarrito, Pedido } from "../types/models";
+import { EstadisticasVentas, EstadoPedido, ItemCarrito, Pedido } from "../types/models";
 
 /**
  * Confirma el carrito de la sesión como una venta real: crea el pedido y su
@@ -41,7 +41,43 @@ export async function crearPedido(
   }
 }
 
-export async function listarPedidosRecientes(restauranteId: number, limite = 20): Promise<Pedido[]> {
+/**
+ * Cambia el estado de un pedido. Se filtra también por restauranteId (no solo
+ * por id del pedido) para que un admin de un restaurante no pueda editar el
+ * pedido de otro restaurante con solo adivinar/probar el id (equivalente al
+ * mismo control IDOR que ya se aplica en el resto del panel de admin).
+ */
+export async function actualizarEstadoPedido(
+  id: number,
+  restauranteId: number,
+  estado: EstadoPedido
+): Promise<void> {
+  await pool.query(`UPDATE pedidos SET estado = $1 WHERE id = $2 AND restaurante_id = $3`, [
+    estado,
+    id,
+    restauranteId,
+  ]);
+}
+
+/**
+ * Pedidos recientes. restauranteId === null => panel "General" (todos los
+ * restaurantes juntos); en ese caso cada fila trae además el nombre del
+ * restaurante, porque se mezclan pedidos de varios.
+ */
+export async function listarPedidosRecientes(restauranteId: number | null, limite = 20): Promise<Pedido[]> {
+  if (restauranteId === null) {
+    const { rows } = await pool.query<Pedido>(
+      `SELECT p.id, p.cliente_nombre AS "clienteNombre", p.total, p.estado, p.creado,
+              r.nombre AS "restauranteNombre"
+         FROM pedidos p
+         JOIN restaurantes r ON r.id = p.restaurante_id
+        ORDER BY p.creado DESC
+        LIMIT $1`,
+      [limite]
+    );
+    return rows;
+  }
+
   const { rows } = await pool.query<Pedido>(
     `SELECT id, cliente_nombre AS "clienteNombre", total, estado, creado
        FROM pedidos
@@ -53,11 +89,16 @@ export async function listarPedidosRecientes(restauranteId: number, limite = 20)
   return rows;
 }
 
-export async function estadisticasVentas(restauranteId: number): Promise<EstadisticasVentas> {
+/** Igual que arriba: restauranteId === null => estadísticas de TODOS los restaurantes juntos. */
+export async function estadisticasVentas(restauranteId: number | null): Promise<EstadisticasVentas> {
+  const filtroRestaurante = restauranteId !== null ? "AND p.restaurante_id = $2" : "";
+  const filtroRestaurantePlano = restauranteId !== null ? "AND restaurante_id = $2" : "";
+  const params = restauranteId !== null ? [restauranteId] : [];
+
   const { rows: totales } = await pool.query<{ total: string; cantidad: string }>(
     `SELECT COALESCE(SUM(total), 0) AS total, COUNT(*) AS cantidad
-       FROM pedidos WHERE restaurante_id = $1 AND estado = 'confirmado'`,
-    [restauranteId]
+       FROM pedidos WHERE estado = 'confirmado' ${filtroRestaurantePlano}`,
+    params
   );
   const totalVentas = Number(totales[0].total);
   const cantidadPedidos = Number(totales[0].cantidad);
@@ -70,21 +111,44 @@ export async function estadisticasVentas(restauranteId: number): Promise<Estadis
     `SELECT dp.nombre, SUM(dp.cantidad) AS "cantidadVendida", SUM(dp.cantidad * dp.precio) AS "totalRecaudado"
        FROM detalle_pedido dp
        JOIN pedidos p ON p.id = dp.pedido_id
-      WHERE p.restaurante_id = $1 AND p.estado = 'confirmado'
+      WHERE p.estado = 'confirmado' ${filtroRestaurante}
       GROUP BY dp.nombre
       ORDER BY "totalRecaudado" DESC
       LIMIT 5`,
-    [restauranteId]
+    params
   );
 
   const { rows: ventasPorDia } = await pool.query<{ fecha: string; total: string }>(
     `SELECT TO_CHAR(creado, 'YYYY-MM-DD') AS fecha, SUM(total) AS total
        FROM pedidos
-      WHERE restaurante_id = $1 AND estado = 'confirmado' AND creado >= CURRENT_DATE - INTERVAL '13 days'
+      WHERE estado = 'confirmado' AND creado >= CURRENT_DATE - INTERVAL '13 days' ${filtroRestaurantePlano}
       GROUP BY fecha
       ORDER BY fecha ASC`,
-    [restauranteId]
+    params
   );
+
+  let ventasPorRestaurante: EstadisticasVentas["ventasPorRestaurante"];
+  if (restauranteId === null) {
+    const { rows } = await pool.query<{
+      restauranteId: number;
+      restauranteNombre: string;
+      total: string;
+      pedidos: string;
+    }>(
+      `SELECT r.id AS "restauranteId", r.nombre AS "restauranteNombre",
+              COALESCE(SUM(p.total), 0) AS total, COUNT(p.id) AS pedidos
+         FROM restaurantes r
+         LEFT JOIN pedidos p ON p.restaurante_id = r.id AND p.estado = 'confirmado'
+        GROUP BY r.id, r.nombre
+        ORDER BY total DESC`
+    );
+    ventasPorRestaurante = rows.map((r) => ({
+      restauranteId: r.restauranteId,
+      restauranteNombre: r.restauranteNombre,
+      total: Number(r.total),
+      pedidos: Number(r.pedidos),
+    }));
+  }
 
   return {
     totalVentas,
@@ -96,5 +160,6 @@ export async function estadisticasVentas(restauranteId: number): Promise<Estadis
       totalRecaudado: Number(p.totalRecaudado),
     })),
     ventasPorDia: ventasPorDia.map((v) => ({ fecha: v.fecha, total: Number(v.total) })),
+    ventasPorRestaurante,
   };
 }

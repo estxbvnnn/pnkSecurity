@@ -29,6 +29,12 @@
       select.addEventListener("change", () => select.form?.submit());
     });
 
+    // --- Selector de estado de un pedido (Ventas): mismo motivo, auto-envía
+    // su propio formulario al cambiar. ---
+    document.querySelectorAll<HTMLSelectElement>(".selector-estado-pedido").forEach((select) => {
+      select.addEventListener("change", () => select.form?.submit());
+    });
+
     // --- Selector de restaurante (dashboard): navega a /admin/:id (ruta
     // limpia, sin ?id= en la URL). ---
     document.querySelectorAll<HTMLSelectElement>(".selector-restaurante-path").forEach((select) => {

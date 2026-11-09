@@ -98,7 +98,7 @@ CREATE TABLE pedidos (
   restaurante_id  INTEGER NOT NULL REFERENCES restaurantes(id),
   cliente_nombre  VARCHAR(255) NOT NULL,
   total           INTEGER NOT NULL,
-  estado          VARCHAR(20) NOT NULL DEFAULT 'confirmado',
+  estado          VARCHAR(20) NOT NULL DEFAULT 'confirmado', -- 'revision' | 'confirmado' | 'entregado' | 'cancelado'
   creado          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

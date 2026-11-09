@@ -8,8 +8,11 @@ de `src/app.ts`), sin mocks del servidor — solo la base de datos es de pruebas
 
 - `publico.test.ts` — carta pública, validación del id del restaurante, `/health`.
 - `auth.test.ts` — login correcto/incorrecto, CSRF, control de acceso al panel admin (VUL-13/VUL-14).
-- `carrito.test.ts` — agregar al carrito, checkout real (crea un pedido), carrito vacío.
-- `admin.test.ts` — dashboard, crear categoría, validación de foto obligatoria, toggle de carta.
+- `carrito.test.ts` — agregar al carrito, checkout real (crea un pedido), carrito con ítems de
+  varios restaurantes (crea un pedido separado por cada restaurante), carrito vacío.
+- `admin.test.ts` — dashboard, crear categoría, validación de foto obligatoria, toggle de carta,
+  cambiar el estado de un pedido (y que no se pueda cambiar el de otro restaurante — IDOR), panel
+  General de Ventas (todos los restaurantes juntos).
 - `rateLimiter.test.ts` — bloqueo tras 5 intentos de login fallidos (VUL-20). Va en su propio
   archivo para no compartir el contador en memoria con `auth.test.ts`.
 

@@ -22,7 +22,7 @@ import {
   editarForm as editarRestauranteForm,
   actualizarHandler as actualizarRestauranteHandler,
 } from "../controllers/restauranteAdminController";
-import { ventas } from "../controllers/ventasController";
+import { ventas, actualizarEstado as actualizarEstadoPedidoHandler } from "../controllers/ventasController";
 import {
   mostrar as mostrarSeguridad,
   generar as generar2fa,
@@ -93,6 +93,7 @@ adminRouter.post("/restaurantes/:id", conManejoDeSubidaRestaurante, csrfValidar,
 
 // --- Ventas ---
 adminRouter.get("/ventas", ventas);
+adminRouter.post("/pedidos/:id/estado", csrfValidar, actualizarEstadoPedidoHandler);
 
 // --- Seguridad: 2FA (TOTP) del usuario admin logueado ---
 adminRouter.get("/seguridad", mostrarSeguridad);

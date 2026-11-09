@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ventas — <%= restaurante ? restaurante.nombre : '' %></title>
+  <title>Ventas — <%= general ? 'General' : (restaurante ? restaurante.nombre : '') %></title>
   <link rel="stylesheet" href="/vendors/bootstrap/bootstrap.min.css">
   <link rel="stylesheet" href="/vendors/themify-icons/themify-icons.css">
   <link rel="stylesheet" href="/css/style.css">
@@ -16,8 +16,9 @@
   <div class="d-flex align-items-center gap-2 flex-wrap">
     <form method="get" action="/admin/ventas" class="d-flex align-items-center gap-2">
       <select name="id" class="form-control form-control-sm form-select-sm selector-restaurante">
+        <option value="todos" <%= general ? 'selected' : '' %>>🌐 General (todos)</option>
         <% restaurantes.forEach(function(r) { %>
-          <option value="<%= r.id %>" <%= r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
+          <option value="<%= r.id %>" <%= !general && r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
         <% }); %>
       </select>
     </form>
@@ -26,7 +27,7 @@
 </nav>
 
 <div class="container contendor my-4">
-  <h5 class="mb-3"><%= restaurante ? restaurante.nombre : '' %></h5>
+  <h5 class="mb-3"><%= general ? '🌐 General — todos los restaurantes' : (restaurante ? restaurante.nombre : '') %></h5>
 
   <div class="admin-stats">
     <div class="admin-stat-card">
@@ -42,6 +43,26 @@
       <div><div class="valor">$ <%= Number(stats.ticketPromedio).toLocaleString('es-CL') %></div><div class="etiqueta">Ticket promedio</div></div>
     </div>
   </div>
+
+  <% if (general && stats.ventasPorRestaurante) { %>
+    <div class="admin-section mb-4">
+      <div class="admin-section-header" style="cursor:default">
+        <span class="titulo"><i class="ti-store"></i> Ventas por restaurante</span>
+      </div>
+      <table class="admin-tabla-items">
+        <thead><tr><th>Restaurante</th><th>Pedidos</th><th>Total</th></tr></thead>
+        <tbody>
+          <% stats.ventasPorRestaurante.forEach(function(r) { %>
+            <tr>
+              <td><a href="/admin/ventas?id=<%= r.restauranteId %>"><%= r.restauranteNombre %></a></td>
+              <td><%= r.pedidos %></td>
+              <td class="admin-precio">$ <%= Number(r.total).toLocaleString('es-CL') %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
 
   <div class="row">
     <div class="col-lg-6 mb-4">
@@ -97,14 +118,34 @@
       <div class="p-3 text-muted">Sin pedidos todavía.</div>
     <% } else { %>
       <table class="admin-tabla-items">
-        <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+        <thead>
+          <tr>
+            <th>#</th>
+            <% if (general) { %><th>Restaurante</th><% } %>
+            <th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th>
+          </tr>
+        </thead>
         <tbody>
           <% pedidos.forEach(function(p) { %>
             <tr>
               <td>#<%= p.id %></td>
+              <% if (general) { %><td><%= p.restauranteNombre %></td><% } %>
               <td><%= p.clienteNombre %></td>
               <td class="admin-precio">$ <%= Number(p.total).toLocaleString('es-CL') %></td>
-              <td><span class="badge-visible"><%= p.estado %></span></td>
+              <td>
+                <% if (general) { %>
+                  <span class="badge-visible"><%= p.estado %></span>
+                <% } else { %>
+                  <form method="post" action="/admin/pedidos/<%= p.id %>/estado" class="d-inline">
+                    <input type="hidden" name="csrfToken" value="<%= csrfToken %>">
+                    <select name="estado" class="form-control form-control-sm selector-estado-pedido">
+                      <% estadosPedido.forEach(function(e) { %>
+                        <option value="<%= e %>" <%= e === p.estado ? 'selected' : '' %>><%= e %></option>
+                      <% }); %>
+                    </select>
+                  </form>
+                <% } %>
+              </td>
               <td><%= new Date(p.creado).toLocaleString('es-CL') %></td>
             </tr>
           <% }); %>
