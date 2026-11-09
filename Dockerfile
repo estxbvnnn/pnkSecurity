@@ -32,6 +32,15 @@ RUN addgroup -S nodejs \
   && mkdir -p dist/public/imagenes \
   && chown -R cartaapp:nodejs /app
 
+# Permite que el proceso de node (corriendo como usuario no-root) escuche en
+# un puerto < 1024 (ej. 80 en Producción) sin ser root. cap_add a nivel de
+# contenedor no basta por sí solo para un proceso no-root — se le da la
+# capability directamente al binario (más confiable que depender de
+# "ambient capabilities").
+RUN apk add --no-cache libcap \
+  && setcap 'cap_net_bind_service=+ep' "$(readlink -f "$(which node)")" \
+  && apk del libcap
+
 USER cartaapp
 
 EXPOSE 3000

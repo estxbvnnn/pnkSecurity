@@ -86,7 +86,10 @@ services:
   # (así "127.0.0.1" dentro del contenedor es el propio host, sin tener que
   # abrir el Postgres nativo a la red de Docker) y PGHOST=127.0.0.1 va en
   # .env.prod. El PORT real de escucha también se define en .env.prod
-  # (3003), ya que con network_mode:host no se usa "ports:".
+  # (80, el puerto principal — Apache/pnkSecurity ya se dio de baja), ya
+  # que con network_mode:host no se usa "ports:". cap_add NET_BIND_SERVICE
+  # es necesario porque el proceso corre como usuario no-root (cartaapp) y
+  # Linux exige ese permiso para escuchar en un puerto < 1024.
   app-prod:
     build: .
     restart: unless-stopped
@@ -94,6 +97,8 @@ services:
     environment:
       NODE_ENV: production
     network_mode: host
+    cap_add:
+      - NET_BIND_SERVICE
     volumes:
       - imagenes_prod:/app/dist/public/imagenes
 
