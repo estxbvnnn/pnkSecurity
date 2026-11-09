@@ -23,7 +23,13 @@ describe("Panel de administración", () => {
     const agent = request.agent(app);
     await loginAdmin(agent);
 
-    const res = await agent.get("/admin/1");
+    // /admin/1 solo cambia el restaurante activo en sesión y redirige a la
+    // URL limpia /admin (sin importar qué restaurante se administre).
+    const cambio = await agent.get("/admin/1");
+    expect(cambio.status).toBe(302);
+    expect(cambio.headers.location).toBe("/admin");
+
+    const res = await agent.get("/admin");
     expect(res.status).toBe(200);
     expect(res.text).toContain("Panel de Administración");
   });
@@ -31,8 +37,9 @@ describe("Panel de administración", () => {
   it("el admin puede crear una nueva categoría dentro de una carta", async () => {
     const agent = request.agent(app);
     await loginAdmin(agent);
+    await agent.get("/admin/1"); // activa el restaurante 1 en sesión
 
-    const dash = await agent.get("/admin/1");
+    const dash = await agent.get("/admin");
     const csrf = csrfDeFormulario(dash.text);
 
     const res = await agent.post("/admin/categorias").type("form").send({
@@ -43,7 +50,7 @@ describe("Panel de administración", () => {
     });
     expect(res.status).toBe(302);
 
-    const dash2 = await agent.get("/admin/1");
+    const dash2 = await agent.get("/admin");
     expect(dash2.text).toContain("Categoria de Prueba QA");
   });
 
@@ -69,8 +76,9 @@ describe("Panel de administración", () => {
   it("ocultar/mostrar una carta funciona (y se restaura: los demás tests dependen de que la carta 1 siga visible)", async () => {
     const agent = request.agent(app);
     await loginAdmin(agent);
+    await agent.get("/admin/1"); // activa el restaurante 1 en sesión
 
-    const dash = await agent.get("/admin/1");
+    const dash = await agent.get("/admin");
     const csrf = csrfDeFormulario(dash.text);
 
     // Oculta la carta...

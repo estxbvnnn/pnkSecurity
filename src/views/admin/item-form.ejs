@@ -16,7 +16,7 @@
   <div class="admin-brand">
     <i class="ti-<%= item ? 'pencil' : 'plus' %>"></i> <%= item ? 'Editar' : 'Nuevo' %> producto
   </div>
-  <a class="btn btn-sm btn-outline-light" href="/admin/<%= restauranteId %>">
+  <a class="btn btn-sm btn-outline-light" href="/admin">
     <i class="ti-arrow-left"></i> Volver al panel
   </a>
 </nav>
@@ -110,7 +110,7 @@
       <button type="submit" class="btn btn-admin-primary">
         <i class="ti-check"></i> <%= item ? 'Guardar cambios' : 'Crear producto' %>
       </button>
-      <a class="btn btn-outline-secondary" href="/admin/<%= restauranteId %>">Cancelar</a>
+      <a class="btn btn-outline-secondary" href="/admin">Cancelar</a>
     </form>
   </div>
 </div>

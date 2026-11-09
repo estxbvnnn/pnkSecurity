@@ -47,7 +47,18 @@ function parsearItemInput(body: Record<string, unknown>, foto: string): ItemInpu
 /** Panel principal: muestra toda la carta (incl. ítems ocultos) para gestionarla. */
 export async function dashboard(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const restauranteId = idValido(req.params.id) ?? idValido(req.session.restauranteId) ?? 1;
+    // /admin/:id solo existe para CAMBIAR el restaurante activo (selector):
+    // guarda el id en sesión y redirige a la URL limpia /admin, que es la
+    // única que se muestra siempre, sin importar qué restaurante se
+    // administre.
+    const idDeRuta = idValido(req.params.id);
+    if (idDeRuta !== null) {
+      req.session.restauranteId = idDeRuta;
+      res.redirect("/admin");
+      return;
+    }
+
+    const restauranteId = idValido(req.session.restauranteId) ?? 1;
     req.session.restauranteId = restauranteId;
 
     const [restaurante, cartas, restaurantes] = await Promise.all([
@@ -106,7 +117,7 @@ export async function crearCartaHandler(req: Request, res: Response, next: NextF
     if (nombre && nombre.length <= 45) {
       await crearCarta(restauranteId, nombre, orden);
     }
-    res.redirect(`/admin/${restauranteId}`);
+    res.redirect("/admin");
   } catch (err) {
     next(err);
   }
@@ -119,7 +130,7 @@ export async function toggleCartaHandler(req: Request, res: Response, next: Next
     if (cartaId !== null) {
       await alternarVisibilidadCarta(cartaId, restauranteId);
     }
-    res.redirect(`/admin/${restauranteId}`);
+    res.redirect("/admin");
   } catch (err) {
     next(err);
   }
@@ -127,14 +138,13 @@ export async function toggleCartaHandler(req: Request, res: Response, next: Next
 
 export async function crearCategoriaHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const restauranteId = idValido(req.session.restauranteId) ?? 1;
     const cartaId = idValido(req.body.cartaId);
     const nombre = String(req.body.nombre ?? "").trim();
     const orden = Number(req.body.orden ?? 0) || 0;
     if (cartaId !== null && nombre && nombre.length <= 100) {
       await crearCategoria(cartaId, nombre, orden);
     }
-    res.redirect(`/admin/${restauranteId}`);
+    res.redirect("/admin");
   } catch (err) {
     next(err);
   }
@@ -142,13 +152,12 @@ export async function crearCategoriaHandler(req: Request, res: Response, next: N
 
 export async function toggleCategoriaHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const restauranteId = idValido(req.session.restauranteId) ?? 1;
     const categoriaId = idValido(req.params.id);
     const cartaId = idValido(req.body.cartaId);
     if (categoriaId !== null && cartaId !== null) {
       await alternarVisibilidadCategoria(categoriaId, cartaId);
     }
-    res.redirect(`/admin/${restauranteId}`);
+    res.redirect("/admin");
   } catch (err) {
     next(err);
   }
@@ -221,7 +230,7 @@ export async function crearItemHandler(req: Request, res: Response, next: NextFu
       return;
     }
     await crearItem(datos);
-    res.redirect(`/admin/${restauranteId}?ok=creado`);
+    res.redirect("/admin?ok=creado");
   } catch (err) {
     next(err);
   }
@@ -262,7 +271,7 @@ export async function actualizarItemHandler(req: Request, res: Response, next: N
     }
 
     await actualizarItem(itemId, datos);
-    res.redirect(`/admin/${restauranteId}?ok=actualizado`);
+    res.redirect("/admin?ok=actualizado");
   } catch (err) {
     next(err);
   }
@@ -270,7 +279,6 @@ export async function actualizarItemHandler(req: Request, res: Response, next: N
 
 export async function eliminarItemHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const restauranteId = idValido(req.session.restauranteId) ?? 1;
     const itemId = idValido(req.params.id);
     if (itemId !== null) {
       await eliminarItem(itemId);
@@ -278,7 +286,7 @@ export async function eliminarItemHandler(req: Request, res: Response, next: Nex
       // elimine (borrado lógico), por si se necesita restaurar el registro.
       registrarEvento(req, "admin_item_eliminado", { itemId, usuarioId: req.session.usuarioId });
     }
-    res.redirect(`/admin/${restauranteId}?ok=eliminado`);
+    res.redirect("/admin?ok=eliminado");
   } catch (err) {
     next(err);
   }
