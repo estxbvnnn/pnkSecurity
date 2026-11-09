@@ -67,8 +67,8 @@ npm start         # node dist/server.js
 - **Errores**: nunca se devuelve el stack trace ni detalle de SQL al cliente; solo se registra en el servidor.
 - **Control de acceso**: comentar requiere sesión iniciada; el autor del comentario se toma de la sesión, no del formulario.
 
-## Próximos pasos (roadmap de la entrega)
+## Estado de la entrega
 
-1. **Dockerizar** (`Dockerfile` + `docker-compose.yml`) con los 3 ambientes (desarrollo, QA, producción).
-2. **Desplegar** en AWS (misma instancia donde ya vive PostgreSQL) + Cloudflare delante.
-3. **Jenkins** (en una instancia aparte) con plugins OWASP/MITRE: pipeline Dev → QA → escaneo de seguridad → despliegue automático a Producción si pasa los filtros.
+1. **Dockerizado** (`Dockerfile` + `docker-compose.yml`) con los 3 ambientes (desarrollo, QA, producción) — ✅. Validados automáticamente en GitHub Actions en cada push (`.github/workflows/ambientes.yml`, ver pestaña "Actions" del repo): un job construye y levanta Desarrollo, otro QA (+ corre la suite de pruebas funcionales), y otro valida que la imagen de Producción compile.
+2. **Desplegado** en AWS (EC2 de Producción) detrás de un Worker de Cloudflare como capa de seguridad (WAF ligero + rate limiting + bloqueo de bots, ver `cloudflare-worker/README.md`) — ✅.
+3. **Jenkins** (en una instancia aparte) con plugins OWASP/MITRE: pipeline Checkout → Build → QA → npm audit → OWASP Dependency-Check → despliegue automático a Producción si pasa los filtros de seguridad — ✅ (`Jenkinsfile`).

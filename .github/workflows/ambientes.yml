@@ -1,0 +1,115 @@
+name: 3 Ambientes (Desarrollo / QA / Producción)
+
+# Valida los 3 ambientes de la entrega (docker-compose.yml): cada uno se
+# construye y se levanta de forma aislada, con su propio Postgres (excepto
+# Producción, que valida solo que la imagen compila — el despliegue real a
+# Producción lo hace Jenkins contra el servidor real, no este workflow).
+on:
+  push:
+    branches: [carta-digital-nodejs]
+  pull_request:
+    branches: [carta-digital-nodejs]
+  workflow_dispatch: {}
+
+jobs:
+  ambiente-desarrollo:
+    name: "Ambiente: Desarrollo"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generar .env.dev
+        run: |
+          cat > .env.dev <<EOF
+          POSTGRES_DB=carta_digital
+          POSTGRES_USER=carta_app
+          POSTGRES_PASSWORD=dev_ci_password
+          PGDATABASE=carta_digital
+          PGUSER=carta_app
+          PGPASSWORD=dev_ci_password
+          SESSION_SECRET=ci_dev_secret_$(openssl rand -hex 16)
+          SESSION_SECURE_COOKIE=false
+          EOF
+
+      - name: Construir y levantar app-dev + db-dev
+        run: docker compose up -d --build app-dev db-dev
+
+      - name: Esperar a que /health responda (puerto 3001)
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3001/health; then echo; echo "OK"; exit 0; fi
+            sleep 2
+          done
+          echo "El ambiente de Desarrollo no respondió a tiempo"; exit 1
+
+      - name: Logs (si falló)
+        if: failure()
+        run: docker compose logs app-dev db-dev
+
+      - name: Apagar ambiente
+        if: always()
+        run: docker compose down -v
+
+  ambiente-qa:
+    name: "Ambiente: QA"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Pruebas funcionales de QA (generadas con IA, ver tests/README.md)
+        run: npm test
+
+      - name: Generar .env.qa
+        run: |
+          cat > .env.qa <<EOF
+          POSTGRES_DB=carta_digital
+          POSTGRES_USER=carta_app
+          POSTGRES_PASSWORD=qa_ci_password
+          PGDATABASE=carta_digital
+          PGUSER=carta_app
+          PGPASSWORD=qa_ci_password
+          SESSION_SECRET=ci_qa_secret_$(openssl rand -hex 16)
+          SESSION_SECURE_COOKIE=false
+          EOF
+
+      - name: Construir y levantar app-qa + db-qa
+        run: docker compose up -d --build app-qa db-qa
+
+      - name: Esperar a que /health responda (puerto 3002)
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3002/health; then echo; echo "OK"; exit 0; fi
+            sleep 2
+          done
+          echo "El ambiente de QA no respondió a tiempo"; exit 1
+
+      - name: Logs (si falló)
+        if: failure()
+        run: docker compose logs app-qa db-qa
+
+      - name: Apagar ambiente
+        if: always()
+        run: docker compose down -v
+
+  ambiente-produccion:
+    name: "Ambiente: Producción"
+    runs-on: ubuntu-latest
+    needs: [ambiente-desarrollo, ambiente-qa]
+    steps:
+      - uses: actions/checkout@v4
+
+      # Producción no se levanta aquí: usa network_mode: host + el Postgres
+      # NATIVO del servidor real (ver docker-compose.yml), algo que no existe
+      # en un runner de GitHub. Este job valida que la imagen compila — el
+      # despliegue real (build + up + healthcheck contra 52.0.165.26) lo
+      # hace Jenkins en la etapa "Despliegue a Producción" del Jenkinsfile.
+      - name: Validar que la imagen de Producción compila
+        run: docker compose build app-prod
