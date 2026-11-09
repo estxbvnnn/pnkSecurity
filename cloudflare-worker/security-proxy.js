@@ -13,7 +13,13 @@
 // Requiere un KV Namespace llamado RATE_LIMIT_KV enlazado en
 // Settings → Variables → KV Namespace Bindings (ver README.md).
 
-const ORIGIN = "http://52.0.165.26";
+// IMPORTANTE: Workers no permite que fetch() apunte directo a una IP
+// literal (Cloudflare lo bloquea como "Error 1003: Direct IP Access Not
+// Allowed", abuso-prevención de su red). Por eso se usa el hostname
+// público que AWS asigna automáticamente a la IP elástica de la EC2
+// (resuelve exactamente a la misma IP, 52.0.165.26) en vez de la IP
+// cruda.
+const ORIGIN = "http://ec2-52-0-165-26.compute-1.amazonaws.com";
 
 const SQLI_XSS_PATTERNS = [
   /union(\s|\/\*.*\*\/)+select/i,
