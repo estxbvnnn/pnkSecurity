@@ -46,9 +46,17 @@ const SCANNER_UA_PATTERNS = [
   /wpscan/i,
 ];
 
+// Los activos estáticos (CSS, JS, vendors, imágenes/fotos) no cuentan
+// para el rate limit: una sola carga de página de menú pide 15-20 de
+// estos archivos, así que contarlos agotaba la cuota en pocos clics y
+// la página se iba quedando "sin CSS" (los últimos recursos pedidos
+// llegaban a 429). El límite real debe aplicarse a rutas sensibles
+// (login, formularios, acciones), no a servir archivos públicos.
+const STATIC_ASSET_PATTERN = /^\/(css|js|vendors|img|imagenes|fonts)\//;
+
 const RATE_LIMITS = {
   "/login": { max: 10, windowSeconds: 60 },
-  default: { max: 120, windowSeconds: 60 },
+  default: { max: 180, windowSeconds: 60 },
 };
 
 export default {
@@ -97,6 +105,8 @@ async function matchesWaf(request, url) {
 }
 
 async function isRateLimited(env, ip, pathname) {
+  if (STATIC_ASSET_PATTERN.test(pathname)) return false;
+
   const rule = RATE_LIMITS[pathname] || RATE_LIMITS.default;
   const bucket = RATE_LIMITS[pathname] ? pathname : "general";
   const key = `rl:${bucket}:${ip}`;

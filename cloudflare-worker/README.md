@@ -12,9 +12,12 @@ propio: se despliega en un subdominio gratis `*.workers.dev`.
 2. **WAF ligero** (`security-proxy.js`): bloquea patrones típicos de SQL
    Injection y XSS en la URL, el query string y el body de la petición
    antes de que lleguen al servidor real.
-3. **Rate limiting por IP** (Workers KV): 120 peticiones/minuto por IP en
-   general, y un límite más estricto (10/minuto) en `/login` para
-   mitigar fuerza bruta.
+3. **Rate limiting por IP** (Workers KV): 180 peticiones/minuto por IP en
+   rutas dinámicas, y un límite más estricto (10/minuto) en `/login` para
+   mitigar fuerza bruta. Los activos estáticos (`/css`, `/js`,
+   `/vendors`, `/img`, `/imagenes`, `/fonts`) no cuentan para este
+   límite — una sola página de menú carga 15-20 de estos archivos, y
+   contarlos agotaba la cuota en pocos clics.
 4. **Bloqueo de herramientas de escaneo conocidas** por User-Agent
    (sqlmap, nikto, nmap, masscan, acunetix, nessus, dirbuster, gobuster,
    wpscan).
