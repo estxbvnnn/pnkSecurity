@@ -78,14 +78,30 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Registrar versiones del entorno
+        run: |
+          echo "NODE_VERSION=$(node -v)" >> "$GITHUB_ENV"
+          echo "NPM_VERSION=$(npm -v)" >> "$GITHUB_ENV"
+
       - name: Pruebas funcionales de QA (generadas con IA, ver tests/README.md)
-        run: npm test -- --json --outputFile=qa-results.json
+        run: |
+          inicio=$(date +%s)
+          npx jest --runInBand --json --outputFile=qa-results.json --coverage --coverageReporters=json-summary
+          codigo=$?
+          fin=$(date +%s)
+          echo "QA_TEST_DURATION_S=$((fin - inicio))" >> "$GITHUB_ENV"
+          exit $codigo
 
       - name: Generar informe de QA (aprobación para pasar a Producción)
         if: always()
+        env:
+          QA_TEST_DURATION_S: ${{ env.QA_TEST_DURATION_S }}
+          NODE_VERSION: ${{ env.NODE_VERSION }}
+          NPM_VERSION: ${{ env.NPM_VERSION }}
         run: |
           python3 - <<'PYEOF'
           import json, os, datetime, pathlib
+          from collections import OrderedDict
 
           try:
               r = json.loads(pathlib.Path("qa-results.json").read_text(encoding="utf-8"))
@@ -97,40 +113,88 @@ jobs:
           failed = r.get("numFailedTests", 0)
           aprobado = bool(r.get("success")) and total > 0
 
-          workspace = os.environ.get("GITHUB_WORKSPACE", "")
-
           veredicto = "✅ APROBADO PARA PRODUCCIÓN" if aprobado else "❌ RECHAZADO — no se despliega a Producción"
           fecha = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
           sha = os.environ.get("GITHUB_SHA", "desconocido")[:8]
+          rama = os.environ.get("GITHUB_REF_NAME", "desconocida")
+          autor = os.environ.get("GITHUB_ACTOR", "desconocido")
+          node_version = os.environ.get("NODE_VERSION", "desconocida")
+          npm_version = os.environ.get("NPM_VERSION", "desconocida")
+          duracion_s = os.environ.get("QA_TEST_DURATION_S", "")
+
+          # Cobertura de código (jest --coverage --coverageReporters=json-summary).
+          cobertura = None
+          cov_path = pathlib.Path("coverage/coverage-summary.json")
+          if cov_path.exists():
+              try:
+                  cov_total = json.loads(cov_path.read_text(encoding="utf-8")).get("total", {})
+                  cobertura = {
+                      k: cov_total[k]["pct"]
+                      for k in ("statements", "branches", "functions", "lines")
+                      if k in cov_total
+                  }
+              except (json.JSONDecodeError, KeyError):
+                  cobertura = None
 
           lineas = [
               "# Informe de QA — Carta Digital",
               "",
               f"**Fecha:** {fecha}",
               f"**Commit:** {sha}",
+              f"**Rama:** {rama}",
+              f"**Autor del commit:** {autor}",
               "**Ambiente:** QA (pruebas funcionales generadas con IA)",
+              "",
+              "## Entorno de ejecución",
+              "",
+              f"- Node.js: {node_version}",
+              f"- npm: {npm_version}",
+              "- PostgreSQL: 17 (alpine)",
+          ]
+          if duracion_s:
+              lineas.append(f"- Duración total de las pruebas: {duracion_s} s")
+          lineas += [
               "",
               "## Resultado de las pruebas funcionales",
               "",
               f"- Total: {total}",
               f"- Pasaron: {passed}",
               f"- Fallaron: {failed}",
-              "",
-              "## Detalle por archivo de pruebas",
-              "",
           ]
 
+          if cobertura:
+              etiquetas = {
+                  "statements": "Sentencias",
+                  "branches": "Ramas",
+                  "functions": "Funciones",
+                  "lines": "Líneas",
+              }
+              lineas += ["", "## Cobertura de código aproximada", ""]
+              lineas += [f"- {etiquetas.get(k, k)}: {v}%" for k, v in cobertura.items()]
+
+          # Agrupadas por funcionalidad real (el bloque describe() de cada
+          # suite, ej. "Autenticación y control de acceso", "Carrito y
+          # checkout"), no por nombre de archivo — así el informe explica QUÉ
+          # se probó, no dónde vive el archivo.
+          categorias: "OrderedDict[str, list]" = OrderedDict()
           for tr in r.get("testResults", []):
-              archivo = tr.get("name", "").replace(workspace, "").lstrip("/\\")
-              lineas.append(f"### {archivo}")
-              lineas.append("")
               for a in tr.get("assertionResults", []):
+                  ancestros = a.get("ancestorTitles") or []
+                  categoria = ancestros[0] if ancestros else "(sin categoría)"
+                  categorias.setdefault(categoria, []).append(a)
+
+          lineas += ["", "## Detalle por funcionalidad", ""]
+          for categoria, pruebas in categorias.items():
+              ok = sum(1 for a in pruebas if a.get("status") == "passed")
+              lineas.append(f"### {categoria} ({ok}/{len(pruebas)})")
+              lineas.append("")
+              for a in pruebas:
                   estado = a.get("status")
                   icono = "✅" if estado == "passed" else ("❌" if estado == "failed" else "⏭️")
-                  nombre = a.get("fullName") or a.get("title", "(sin nombre)")
+                  titulo = a.get("title", "(sin nombre)")
                   duracion = a.get("duration")
                   sufijo = f" ({duracion} ms)" if isinstance(duracion, int) else ""
-                  lineas.append(f"- {icono} {nombre}{sufijo}")
+                  lineas.append(f"- {icono} {titulo}{sufijo}")
                   if estado == "failed":
                       for msg in a.get("failureMessages", []):
                           primera_linea = msg.splitlines()[0] if msg else ""
@@ -141,7 +205,6 @@ jobs:
 
           contenido = "\n".join(lineas)
           pathlib.Path("informe-qa.md").write_text(contenido, encoding="utf-8")
-          print(contenido)
 
           resumen = os.environ.get("GITHUB_STEP_SUMMARY")
           if resumen:
