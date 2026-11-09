@@ -97,12 +97,7 @@ jobs:
           failed = r.get("numFailedTests", 0)
           aprobado = bool(r.get("success")) and total > 0
 
-          fallidos = [
-              a["fullName"]
-              for tr in r.get("testResults", [])
-              for a in tr.get("assertionResults", [])
-              if a.get("status") == "failed"
-          ]
+          workspace = os.environ.get("GITHUB_WORKSPACE", "")
 
           veredicto = "✅ APROBADO PARA PRODUCCIÓN" if aprobado else "❌ RECHAZADO — no se despliega a Producción"
           fecha = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
@@ -121,12 +116,27 @@ jobs:
               f"- Pasaron: {passed}",
               f"- Fallaron: {failed}",
               "",
+              "## Detalle por archivo de pruebas",
+              "",
           ]
-          if fallidos:
-              lineas.append("### Pruebas que fallaron")
+
+          for tr in r.get("testResults", []):
+              archivo = tr.get("name", "").replace(workspace, "").lstrip("/\\")
+              lineas.append(f"### {archivo}")
               lineas.append("")
-              lineas.extend(f"- {nombre}" for nombre in fallidos)
+              for a in tr.get("assertionResults", []):
+                  estado = a.get("status")
+                  icono = "✅" if estado == "passed" else ("❌" if estado == "failed" else "⏭️")
+                  nombre = a.get("fullName") or a.get("title", "(sin nombre)")
+                  duracion = a.get("duration")
+                  sufijo = f" ({duracion} ms)" if isinstance(duracion, int) else ""
+                  lineas.append(f"- {icono} {nombre}{sufijo}")
+                  if estado == "failed":
+                      for msg in a.get("failureMessages", []):
+                          primera_linea = msg.splitlines()[0] if msg else ""
+                          lineas.append(f"  - ⚠️ {primera_linea}")
               lineas.append("")
+
           lineas += ["## Veredicto", "", veredicto, ""]
 
           contenido = "\n".join(lineas)
