@@ -275,7 +275,7 @@ jobs:
         continue-on-error: true
         uses: actions/ai-inference@v1
         with:
-          model: openai/gpt-4o-mini
+          model: openai/gpt-4.1
           max-tokens: '2000'
           system-prompt: |
             Eres un auditor de seguridad experto en OWASP ASVS (Application
