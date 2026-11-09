@@ -57,17 +57,18 @@ pipeline {
           // de recursos reducidos.
           script {
             def resultado = sh(
-              script: """
+              script: '''
+                mkdir -p dependency-check-report
                 export JAVA_OPTS="-Xmx384m"
-                ${DEPENDENCY_CHECK_HOME}/bin/dependency-check.sh \
+                "$DEPENDENCY_CHECK_HOME"/bin/dependency-check.sh \
                   --project "carta-digital-node" \
                   --scan "package-lock.json" \
                   --format HTML --format JSON \
                   --out dependency-check-report \
                   --disableAssembly \
-                  --nvdApiKey "${NVD_API_KEY}" \
+                  --nvdApiKey "$NVD_API_KEY" \
                   --failOnCVSS 9
-              """,
+              ''',
               returnStatus: true
             )
             if (resultado != 0) {
@@ -84,9 +85,9 @@ pipeline {
     }
 
     stage('Despliegue a Producción') {
-      when {
-        branch 'carta-digital-nodejs'
-      }
+      // Este Job apunta siempre a la rama carta-digital-nodejs (configurado
+      // en la definición del Job, ver create-job.groovy) — no es un job
+      // Multibranch, así que no existe BRANCH_NAME para filtrar por "when".
       steps {
         sshagent(credentials: ['prod-server-ssh']) {
           sh '''
