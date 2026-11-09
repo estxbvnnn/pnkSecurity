@@ -184,11 +184,6 @@ jobs:
     permissions:
       contents: read
       models: read
-    # Extra informativo, no un requisito confirmado: si GitHub Models no
-    # responde (cuenta/organización sin acceso habilitado, límite de uso,
-    # etc.) no debe pintar de rojo el run completo — lo que de verdad
-    # importa (3 Ambientes) no depende de este job.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -207,8 +202,14 @@ jobs:
           } > codigo-para-auditar.txt
           wc -l codigo-para-auditar.txt
 
+      # continue-on-error en el STEP (no en el job): así, aunque GitHub
+      # Models falle (bug conocido de actions/ai-inference@v1 — ver
+      # https://github.com/actions/ai-inference/issues — devuelve "OK" en
+      # vez de JSON), el JOB en sí queda en success y no aparece como la X
+      # roja en los checks del commit. Es un extra informativo, no un gate.
       - name: Auditoría con IA (OWASP ASVS 5.0 Nivel 3)
         id: audit
+        continue-on-error: true
         uses: actions/ai-inference@v1
         with:
           model: openai/gpt-4o-mini
@@ -250,10 +251,25 @@ jobs:
           prompt-file: codigo-para-auditar.txt
 
       - name: Guardar el informe de auditoría IA
+        if: always()
         env:
           AUDIT_REPORT: ${{ steps.audit.outputs.response }}
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
         run: |
-          printf '%s\n' "$AUDIT_REPORT" > informe-auditoria-ia.md
+          if [ "$AUDIT_OUTCOME" = "success" ]; then
+            printf '%s\n' "$AUDIT_REPORT" > informe-auditoria-ia.md
+          else
+            cat > informe-auditoria-ia.md <<'EOF'
+          # Informe de Auditoría IA — OWASP ASVS 5.0 (Nivel 3)
+
+          No se pudo generar este informe: GitHub Models devolvió una
+          respuesta inesperada (bug conocido y reportado de
+          `actions/ai-inference@v1`, no relacionado con este proyecto — ver
+          https://github.com/actions/ai-inference/issues). No bloquea el
+          paso a Producción; el gate real es el informe de QA basado en las
+          pruebas funcionales.
+          EOF
+          fi
           cat informe-auditoria-ia.md >> "$GITHUB_STEP_SUMMARY"
 
       # Informativo, igual que OWASP Dependency-Check en el Jenkinsfile: no
@@ -261,6 +277,7 @@ jobs:
       # ambiente-qa, basado en las pruebas funcionales). Una auditoría de IA
       # puede tener falsos positivos y no reemplaza el gate determinístico.
       - name: Publicar informe de auditoría IA como artefacto
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: informe-auditoria-ia
