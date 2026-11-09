@@ -79,7 +79,72 @@ jobs:
         run: npm ci
 
       - name: Pruebas funcionales de QA (generadas con IA, ver tests/README.md)
-        run: npm test
+        run: npm test -- --json --outputFile=qa-results.json
+
+      - name: Generar informe de QA (aprobación para pasar a Producción)
+        if: always()
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, datetime, pathlib
+
+          try:
+              r = json.loads(pathlib.Path("qa-results.json").read_text(encoding="utf-8"))
+          except FileNotFoundError:
+              r = {"success": False, "numTotalTests": 0, "numPassedTests": 0, "numFailedTests": 0, "testResults": []}
+
+          total = r.get("numTotalTests", 0)
+          passed = r.get("numPassedTests", 0)
+          failed = r.get("numFailedTests", 0)
+          aprobado = bool(r.get("success")) and total > 0
+
+          fallidos = [
+              a["fullName"]
+              for tr in r.get("testResults", [])
+              for a in tr.get("assertionResults", [])
+              if a.get("status") == "failed"
+          ]
+
+          veredicto = "✅ APROBADO PARA PRODUCCIÓN" if aprobado else "❌ RECHAZADO — no se despliega a Producción"
+          fecha = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+          sha = os.environ.get("GITHUB_SHA", "desconocido")[:8]
+
+          lineas = [
+              "# Informe de QA — Carta Digital",
+              "",
+              f"**Fecha:** {fecha}",
+              f"**Commit:** {sha}",
+              "**Ambiente:** QA (pruebas funcionales generadas con IA)",
+              "",
+              "## Resultado de las pruebas funcionales",
+              "",
+              f"- Total: {total}",
+              f"- Pasaron: {passed}",
+              f"- Fallaron: {failed}",
+              "",
+          ]
+          if fallidos:
+              lineas.append("### Pruebas que fallaron")
+              lineas.append("")
+              lineas.extend(f"- {nombre}" for nombre in fallidos)
+              lineas.append("")
+          lineas += ["## Veredicto", "", veredicto, ""]
+
+          contenido = "\n".join(lineas)
+          pathlib.Path("informe-qa.md").write_text(contenido, encoding="utf-8")
+          print(contenido)
+
+          resumen = os.environ.get("GITHUB_STEP_SUMMARY")
+          if resumen:
+              with open(resumen, "a", encoding="utf-8") as f:
+                  f.write(contenido)
+          PYEOF
+
+      - name: Publicar informe de QA como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-qa
+          path: informe-qa.md
 
       - name: Generar los 3 .env (placeholders de CI)
         run: for amb in dev qa prod; do cp .env.docker.example ".env.$amb"; done
@@ -109,6 +174,20 @@ jobs:
     needs: [ambiente-desarrollo, ambiente-qa]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Descargar el informe de QA
+        uses: actions/download-artifact@v4
+        with:
+          name: informe-qa
+
+      - name: Verificar que QA aprobó el paso a Producción
+        run: |
+          cat informe-qa.md
+          echo
+          if ! grep -q "APROBADO PARA PRODUCCIÓN" informe-qa.md; then
+            echo "El informe de QA no aprobó el paso a Producción. Abortando."
+            exit 1
+          fi
 
       - name: Generar los 3 .env (placeholders de CI)
         run: for amb in dev qa prod; do cp .env.docker.example ".env.$amb"; done
