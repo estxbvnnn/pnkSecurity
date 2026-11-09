@@ -18,7 +18,15 @@ export const securityHeaders: RequestHandler = helmet({
       frameAncestors: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
+      // El servidor de origen solo escucha HTTP (TLS se termina en el
+      // borde, ej. Cloudflare Worker) — sin esto, helmet agrega
+      // "upgrade-insecure-requests" por defecto y el navegador intenta
+      // cargar cada CSS/imagen por HTTPS contra un origen que no lo
+      // tiene, fallando en silencio (CSS/imágenes rotas).
+      upgradeInsecureRequests: null,
     },
   },
+  // Mismo motivo: no forzar HSTS desde el origen HTTP-only.
+  hsts: false,
   // Express ya no envía X-Powered-By si se usa app.disable('x-powered-by') (ver app.ts).
 });
