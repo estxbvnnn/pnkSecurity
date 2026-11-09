@@ -168,6 +168,88 @@ jobs:
         if: always()
         run: docker compose down -v
 
+  auditoria-ia:
+    name: "Ambiente QA - Auditoría Automatizada con IA (GitHub Models, ASVS 5.0 L3)"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      models: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar el código fuente para la auditoría
+        run: |
+          {
+            echo "Código fuente completo de la aplicación (backend Express/TypeScript, Carta Digital) a auditar."
+            echo
+            for f in $(find src -name "*.ts" | sort); do
+              echo "### Archivo: $f"
+              echo '```typescript'
+              cat "$f"
+              echo '```'
+              echo
+            done
+          } > codigo-para-auditar.txt
+          wc -l codigo-para-auditar.txt
+
+      - name: Auditoría con IA (OWASP ASVS 5.0 Nivel 3)
+        id: audit
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4o-mini
+          system-prompt: |
+            Eres un auditor de seguridad experto en OWASP ASVS (Application
+            Security Verification Standard) versión 5.0, Nivel 3 (el más
+            estricto: aplicaciones críticas). Audita el código fuente de una
+            app Node.js/Express/TypeScript contra ASVS 5.0 L3, por capítulo
+            (V1 Arquitectura, V2 Autenticación, V3 Gestión de Sesión, V4
+            Control de Acceso, V5 Validación/Codificación/Sanitización, V6
+            Criptografía, V7 Manejo de Errores y Logging, V8 Protección de
+            Datos, V9 Comunicaciones, V11 Lógica de Negocio, V12
+            Archivos/Recursos, V13 API, V14 Configuración).
+
+            Responde en español, en Markdown, con esta estructura exacta:
+
+            # Informe de Auditoría IA — OWASP ASVS 5.0 (Nivel 3)
+
+            ## Resumen
+            (2-3 líneas sobre la postura general de seguridad del código)
+
+            ## Hallazgos
+            Por cada hallazgo REAL (no inventes problemas que no están en el
+            código mostrado):
+            - **[Severidad: Alta/Media/Baja] Título corto**
+              - Requisito ASVS: (capítulo y número, ej. V2.1.1)
+              - Archivo: ruta del archivo
+              - Descripción del problema
+              - Recomendación concreta
+
+            Si el código cumple razonablemente bien con una categoría, no
+            inventes hallazgos menores forzados ahí.
+
+            ## Veredicto
+            Termina con una única línea, EXACTAMENTE uno de estos dos textos
+            (nada más en esa línea): "VEREDICTO: APROBADO" o
+            "VEREDICTO: APROBADO CON OBSERVACIONES".
+          prompt-file: codigo-para-auditar.txt
+
+      - name: Guardar el informe de auditoría IA
+        env:
+          AUDIT_REPORT: ${{ steps.audit.outputs.response }}
+        run: |
+          printf '%s\n' "$AUDIT_REPORT" > informe-auditoria-ia.md
+          cat informe-auditoria-ia.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Informativo, igual que OWASP Dependency-Check en el Jenkinsfile: no
+      # bloquea el paso a Producción (el gate real es el informe-qa de
+      # ambiente-qa, basado en las pruebas funcionales). Una auditoría de IA
+      # puede tener falsos positivos y no reemplaza el gate determinístico.
+      - name: Publicar informe de auditoría IA como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-auditoria-ia
+          path: informe-auditoria-ia.md
+
   ambiente-produccion:
     name: "Ambiente: Producción"
     runs-on: ubuntu-latest
