@@ -1,5 +1,7 @@
 # Carta Digital — Node.js + Express + TypeScript + PostgreSQL
 
+<!-- Push de prueba: confirma que el webhook GitHub -> Jenkins dispara el pipeline solo. -->
+
 Reimplementación de la carta digital (3ra/4ta entrega) usando el stack pedido:
 **Backend**: Node.js + Express + TypeScript · **Frontend**: TypeScript compilado a JS plano (sin framework), servido por el mismo Express con vistas EJS · **Base de datos**: PostgreSQL.
 
