@@ -73,7 +73,7 @@ export function Carrito(): JSX.Element {
             Tu carrito está vacío.
           </p>
           <Link to="/" className="boton boton--primario">
-            Ver restaurantes
+            Volver al inicio
           </Link>
         </div>
       ) : (
