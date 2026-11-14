@@ -64,7 +64,7 @@ if [ "${#SUBNET_ARRAY[@]}" -lt 2 ]; then
   echo "  aws ec2 describe-subnets --filters Name=vpc-id,Values=$VPC_ID" >&2
   exit 1
 fi
-echo "Subnets: ${SUBNET_ARRAY[*]:0:2}"
+echo "Subnets: ${SUBNET_ARRAY[*]}"
 
 # --------------------------------------------------- 2) Security groups
 echo "== Security group del ALB (80/443 desde internet) =="
@@ -121,7 +121,7 @@ ALB_ARN=$(aws elbv2 describe-load-balancers --region "$REGION" --names "${NAME_P
   --query 'LoadBalancers[0].LoadBalancerArn' --output text 2>/dev/null || echo "None")
 if [ "$ALB_ARN" = "None" ] || [ -z "$ALB_ARN" ]; then
   ALB_ARN=$(aws elbv2 create-load-balancer --region "$REGION" \
-    --name "${NAME_PREFIX}-alb" --subnets "${SUBNET_ARRAY[@]:0:2}" \
+    --name "${NAME_PREFIX}-alb" --subnets "${SUBNET_ARRAY[@]}" \
     --security-groups "$ALB_SG_ID" --scheme internet-facing --type application \
     --query 'LoadBalancers[0].LoadBalancerArn' --output text)
 fi
@@ -142,6 +142,14 @@ cat > "$USER_DATA_FILE" <<USERDATA
 set -e
 dnf install -y docker git
 systemctl enable --now docker
+# "dnf install docker" instala el motor pero NO el plugin "docker compose"
+# (no esta en los repos de Amazon Linux 2023) -- se instala el binario del
+# plugin a mano, igual que en la instancia original.
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -sL "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-$(uname -m)" \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+rm -rf /opt/carta-digital
 git clone --branch "$GITHUB_BRANCH" "$GITHUB_REPO" /opt/carta-digital
 cd /opt/carta-digital
 cat > .env.prod <<ENVEOF
@@ -192,9 +200,9 @@ else
     --auto-scaling-group-name "$ASG_NAME" \
     --launch-template "LaunchTemplateName=$LT_NAME,Version=\$Latest" \
     --min-size 1 --max-size 4 --desired-capacity 2 \
-    --vpc-zone-identifier "$(IFS=,; echo "${SUBNET_ARRAY[*]:0:2}")" \
+    --vpc-zone-identifier "$(IFS=,; echo "${SUBNET_ARRAY[*]}")" \
     --target-group-arns "$TG_ARN" \
-    --health-check-type ELB --health-check-grace-period 60
+    --health-check-type ELB --health-check-grace-period 600
 
   aws autoscaling put-scaling-policy --region "$REGION" \
     --auto-scaling-group-name "$ASG_NAME" \
