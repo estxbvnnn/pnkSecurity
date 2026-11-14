@@ -207,7 +207,28 @@ Probar que de verdad escala/resiste la caída de una instancia: terminar una
 instancia del ASG a mano (no la original) y confirmar que el sitio sigue
 respondiendo sin cortes mientras el ASG levanta un reemplazo automáticamente.
 
-## 6. Rollback / limpieza
+## 6. Operación del día a día (si algo se cae)
+
+Para no tener que escribir comandos de AWS CLI en el momento en que algo
+falla, usar [`scripts/aws/runbook.sh`](../scripts/aws/runbook.sh) — se sube a
+CloudShell igual que el script de setup, y después es un comando por tarea:
+
+```bash
+chmod +x runbook.sh
+./runbook.sh estado                 # ¿está todo sano?
+./runbook.sh reiniciar-app          # la app anda colgada -> reinicia el contenedor
+./runbook.sh reemplazar-instancias  # algo anda mal a nivel instancia -> las reemplaza sin cortar el servicio
+./runbook.sh parar                  # apaga la capacidad extra (la instancia principal NUNCA se apaga con esto)
+./runbook.sh iniciar                # vuelve a prender la capacidad extra
+./runbook.sh logs                   # ver los últimos logs de la app
+```
+
+`reiniciar-app` y `logs` entran por SSH a la instancia principal, así que hay
+que subir también la key (`test.pem`) a CloudShell una vez (`chmod 400
+test.pem` después de subirla) — CloudShell guarda los archivos de una sesión
+a la otra en `$HOME`, no hace falta resubirla cada vez.
+
+## 7. Rollback / limpieza
 
 Si hay que volver atrás (por ejemplo, durante pruebas):
 
@@ -224,7 +245,7 @@ aws ec2 delete-security-group --region us-east-1 --group-id "<ALB_SG_ID>"
 Y revertir el `ORIGIN` del Worker de Cloudflare al hostname original de
 `52.0.165.26`.
 
-## 7. Qué queda pendiente para una versión "producción real"
+## 8. Qué queda pendiente para una versión "producción real"
 
 - Mover Postgres a RDS (Multi-AZ) para que la base de datos también tenga
   alta disponibilidad, no solo la app.
