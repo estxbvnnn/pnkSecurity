@@ -162,6 +162,7 @@ PGPORT=5432
 PGDATABASE=carta_digital
 PGUSER=carta_app
 PGPASSWORD=$DB_PASSWORD
+PGSSL=true
 SESSION_SECRET=$SESSION_SECRET
 ENVEOF
 # docker-compose.yml tambien define los servicios de Desarrollo/QA, que

@@ -13,6 +13,12 @@ export const pool = new Pool({
   database: env.db.database,
   user: env.db.user,
   password: env.db.password,
+  // rejectUnauthorized: false porque RDS usa un certificado firmado por la
+  // CA de Amazon, que no esta en el bundle de confianza por defecto de
+  // Node -- la conexion ya esta restringida por el security group dentro
+  // de la VPC, cifrar el trafico es el objetivo, no validar la cadena de
+  // certificados completa.
+  ssl: env.db.ssl ? { rejectUnauthorized: false } : undefined,
   max: 5, // servidor con poca RAM: no abrir demasiadas conexiones a la vez
   idleTimeoutMillis: 30_000,
 });

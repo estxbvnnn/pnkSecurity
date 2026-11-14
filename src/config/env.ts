@@ -19,6 +19,11 @@ export const env = {
     database: required("PGDATABASE", "carta_digital"),
     user: required("PGUSER", "carta_app"),
     password: required("PGPASSWORD"),
+    // RDS exige conexiones cifradas por defecto; el Postgres nativo/local
+    // (dev, QA, test) no tiene certificado, asi que esto queda apagado
+    // salvo que se pida explicitamente (PGSSL=true en .env.prod cuando
+    // PGHOST apunta a RDS).
+    ssl: process.env.PGSSL === "true",
   },
 
   session: {
