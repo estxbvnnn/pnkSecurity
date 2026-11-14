@@ -4,7 +4,7 @@
 import request from "supertest";
 import { createApp } from "../src/app";
 import { pool } from "../src/config/db";
-import { csrfDeFormulario } from "./helpers";
+import { csrfDeApi } from "./helpers";
 
 const app = createApp();
 
@@ -15,22 +15,21 @@ describe("Rate limiting de login (equivalente VUL-20)", () => {
 
   it("bloquea el login tras 5 intentos fallidos consecutivos", async () => {
     const agent = request.agent(app);
-    const home = await agent.get("/restaurante/1");
-    const csrf = csrfDeFormulario(home.text);
+    const csrf = await csrfDeApi(agent);
 
     for (let i = 0; i < 5; i++) {
       await agent
-        .post("/login")
-        .type("form")
-        .send({ email: "admin@test.local", password: "clave-incorrecta", csrfToken: csrf });
+        .post("/api/login")
+        .set("X-CSRF-Token", csrf)
+        .send({ email: "admin@test.local", password: "clave-incorrecta" });
     }
 
     const res = await agent
-      .post("/login")
-      .type("form")
-      .send({ email: "admin@test.local", password: "clave-incorrecta", csrfToken: csrf });
+      .post("/api/login")
+      .set("X-CSRF-Token", csrf)
+      .send({ email: "admin@test.local", password: "clave-incorrecta" });
 
-    expect(res.status).toBe(302);
-    expect(res.headers.location).toContain("login=bloqueado");
+    expect(res.status).toBe(429);
+    expect(res.body.ok).toBe(false);
   });
 });

@@ -21,6 +21,10 @@ CREATE TABLE restaurantes (
   id            SERIAL PRIMARY KEY,
   rut           VARCHAR(11)  NOT NULL,
   nombre        VARCHAR(200) NOT NULL,
+  -- Slug para la URL pública (ej. "africarestobar") en vez del id numérico
+  -- secuencial: evita que cualquiera pueda enumerar restaurantes probando
+  -- /1, /2, /3... en la URL.
+  slug          VARCHAR(100) NOT NULL UNIQUE,
   fono          VARCHAR(45)  NOT NULL,
   mapa          VARCHAR(200),
   foto          VARCHAR(200),
@@ -124,14 +128,14 @@ INSERT INTO direcciones (id, calle, numero, comuna, region) VALUES
   (7, 'Casa', '25', 'La Higuera', 'Coquimbo'),
   (8, 'Guatemala', '55', 'La Serena', 'Coquimbo');
 
-INSERT INTO restaurantes (id, rut, nombre, fono, foto, email, direccion_id) VALUES
-  (1, '99887766-5', 'Afríca Restobar', '22334455', 'resto1.jpg', 'mail@correo.cl', 2),
-  (2, '88776655-4', 'Restaurant la Bahía', '512323232', 'bahia.jpg', 'mail1@correo.cl', 3),
-  (3, '22334455-6', 'La Esquina del Sabor', '22334455', 'resto3.jpg', 'mail2@correo.cl', 4),
-  (4, '258-3', 'La Pica de Armando', '223366', 'resto4.jpg', 'mail3@correo.cl', 5),
-  (5, '258-9', 'Donde Carlos', '336699', 'resto5.jpg', 'mail4@correo.cl', 6),
-  (6, '258-6', 'RestoPenka', '336699', 'resto6.jpg', 'mail5@correo.cl', 7),
-  (7, '369-5', 'La Pica de Carolina', '336699', 'resto7.jpg', 'mail6@correo.cl', 8);
+INSERT INTO restaurantes (id, rut, nombre, slug, fono, foto, email, direccion_id) VALUES
+  (1, '99887766-5', 'Afríca Restobar', 'africarestobar', '22334455', 'resto1.jpg', 'mail@correo.cl', 2),
+  (2, '88776655-4', 'Restaurant la Bahía', 'restaurantlabahia', '512323232', 'bahia.jpg', 'mail1@correo.cl', 3),
+  (3, '22334455-6', 'La Esquina del Sabor', 'laesquinadelsabor', '22334455', 'resto3.jpg', 'mail2@correo.cl', 4),
+  (4, '258-3', 'La Pica de Armando', 'lapicadearmando', '223366', 'resto4.jpg', 'mail3@correo.cl', 5),
+  (5, '258-9', 'Donde Carlos', 'dondecarlos', '336699', 'resto5.jpg', 'mail4@correo.cl', 6),
+  (6, '258-6', 'RestoPenka', 'restopenka', '336699', 'resto6.jpg', 'mail5@correo.cl', 7),
+  (7, '369-5', 'La Pica de Carolina', 'lapicadecarolina', '336699', 'resto7.jpg', 'mail6@correo.cl', 8);
 
 INSERT INTO cartas (id, nombre, orden, visible, foto, restaurante_id) VALUES
   (1, 'Vinos', 1, TRUE, 'carta2.jpg', 1),

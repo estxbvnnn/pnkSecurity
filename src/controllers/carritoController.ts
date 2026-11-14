@@ -49,11 +49,11 @@ export function vaciar(req: Request, res: Response): void {
   res.json({ ok: true });
 }
 
+/** GET /api/carrito — estado actual del carrito (consumido por el frontend React). */
 export function mostrar(req: Request, res: Response): void {
-  res.render("carrito", {
+  res.json({
     restauranteId: idValido(req.session.restauranteId) ?? 1,
     carrito: req.session.carrito ?? [],
-    csrfToken: req.session.csrfToken,
   });
 }
 
@@ -70,7 +70,7 @@ export async function confirmar(req: Request, res: Response, next: NextFunction)
     const carrito = req.session.carrito ?? [];
 
     if (!carrito.length) {
-      res.redirect("/carrito?error=vacio");
+      res.status(400).json({ ok: false, error: "carrito_vacio" });
       return;
     }
 
@@ -95,7 +95,7 @@ export async function confirmar(req: Request, res: Response, next: NextFunction)
 
     req.session.carrito = [];
 
-    res.render("pedido-confirmado", { restauranteId: restauranteIdActual, pedidos });
+    res.json({ ok: true, restauranteId: restauranteIdActual, pedidos });
   } catch (err) {
     next(err);
   }

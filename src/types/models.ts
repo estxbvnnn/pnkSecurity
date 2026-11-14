@@ -1,6 +1,7 @@
 export interface Restaurante {
   id: number;
   nombre: string;
+  slug: string;
   fono: string;
   email: string | null;
   foto: string | null;
@@ -14,6 +15,7 @@ export interface Restaurante {
 export interface RestauranteResumen {
   id: number;
   nombre: string;
+  slug: string;
   foto: string | null;
 }
 

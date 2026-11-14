@@ -1,37 +1,34 @@
 import { Request, Response, NextFunction } from "express";
-import { obtenerRestaurante, listarRestaurantesPublico } from "../models/restauranteModel";
+import { obtenerRestaurantePorSlug, listarRestaurantesPublico } from "../models/restauranteModel";
 import { listarCartas, listarCategorias, listarItemsPorCategoria, listarDestacados } from "../models/cartaModel";
 import { listarComentarios } from "../models/comentarioModel";
-import { idValido } from "../utils/validar";
 
-/** Landing "/": selector público de restaurantes (cada uno con su propia carta). */
+/** GET /api/restaurantes — listado público para la portada de React. */
 export async function listarRestaurantes(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const restaurantes = await listarRestaurantesPublico();
-    res.render("restaurantes", { restaurantes });
+    res.json({ restaurantes });
   } catch (err) {
     next(err);
   }
 }
 
-/** Carta digital de un restaurante específico: GET /restaurante/:id */
+/**
+ * GET /api/restaurantes/:slug — carta digital completa de un restaurante.
+ * Por slug (no por id numérico): evita exponer/enumerar ids secuenciales
+ * en la URL pública (ej. "/africarestobar" en vez de "/restaurante/1").
+ */
 export async function verCarta(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const restauranteId = idValido(req.params.id);
-    if (restauranteId === null) {
-      res.status(404).send("Restaurante no encontrado.");
-      return;
-    }
-    req.session.restauranteId = restauranteId; // se guarda el ENTERO ya validado
-
-    const restaurante = await obtenerRestaurante(restauranteId);
+    const restaurante = await obtenerRestaurantePorSlug(req.params.slug);
     if (!restaurante) {
-      res.status(404).send("Restaurante no encontrado.");
+      res.status(404).json({ ok: false, error: "restaurante_no_encontrado" });
       return;
     }
+    req.session.restauranteId = restaurante.id; // el carrito/pedidos siguen operando por id internamente
 
-    const destacados = await listarDestacados(restauranteId);
-    const cartas = await listarCartas(restauranteId);
+    const destacados = await listarDestacados(restaurante.id);
+    const cartas = await listarCartas(restaurante.id);
 
     const secciones = await Promise.all(
       cartas.map(async (carta) => {
@@ -46,18 +43,17 @@ export async function verCarta(req: Request, res: Response, next: NextFunction):
       })
     );
 
-    const comentarios = await listarComentarios(restauranteId);
+    const comentarios = await listarComentarios(restaurante.id);
 
-    res.render("index", {
-      restauranteId,
+    res.json({
       restaurante,
       destacados,
       secciones,
       comentarios,
-      nombreUsuario: req.session.nombre ?? null,
-      esAdmin: req.session.rol === "admin",
-      loginEstado: (req.query.login as string) ?? null,
-      csrfToken: req.session.csrfToken,
+      sesion: {
+        nombreUsuario: req.session.nombre ?? null,
+        esAdmin: req.session.rol === "admin",
+      },
     });
   } catch (err) {
     next(err);

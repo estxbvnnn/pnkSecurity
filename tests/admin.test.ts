@@ -1,17 +1,16 @@
 import request from "supertest";
 import { createApp } from "../src/app";
 import { pool } from "../src/config/db";
-import { csrfDeFormulario } from "./helpers";
+import { csrfDeFormulario, csrfDeApi } from "./helpers";
 
 const app = createApp();
 
+// El login en sí ya no es una página pública (ahora es la API JSON que
+// consume el frontend React, ver routes/index.ts) — el panel admin (EJS)
+// que viene después sigue exactamente igual.
 async function loginAdmin(agent: ReturnType<typeof request.agent>): Promise<void> {
-  const home = await agent.get("/restaurante/1");
-  const csrf = csrfDeFormulario(home.text);
-  await agent
-    .post("/login")
-    .type("form")
-    .send({ email: "admin@test.local", password: "admin01", csrfToken: csrf });
+  const csrf = await csrfDeApi(agent);
+  await agent.post("/api/login").set("X-CSRF-Token", csrf).send({ email: "admin@test.local", password: "admin01" });
 }
 
 describe("Panel de administración", () => {

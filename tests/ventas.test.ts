@@ -1,7 +1,7 @@
 import request from "supertest";
 import { createApp } from "../src/app";
 import { pool } from "../src/config/db";
-import { csrfDeFormulario, csrfDeMeta } from "./helpers";
+import { csrfDeFormulario, csrfDeMeta, csrfDeApi } from "./helpers";
 
 // Archivo propio (y por lo tanto su propia instancia de `app`/rate-limiter en
 // memoria) por el mismo motivo que rateLimiter.test.ts: cada test que hace
@@ -11,12 +11,8 @@ import { csrfDeFormulario, csrfDeMeta } from "./helpers";
 const app = createApp();
 
 async function loginAdmin(agent: ReturnType<typeof request.agent>): Promise<void> {
-  const home = await agent.get("/restaurante/1");
-  const csrf = csrfDeFormulario(home.text);
-  await agent
-    .post("/login")
-    .type("form")
-    .send({ email: "admin@test.local", password: "admin01", csrfToken: csrf });
+  const csrf = await csrfDeApi(agent);
+  await agent.post("/api/login").set("X-CSRF-Token", csrf).send({ email: "admin@test.local", password: "admin01" });
 }
 
 describe("Ventas: estado de pedido y panel General", () => {

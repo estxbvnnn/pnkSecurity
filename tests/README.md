@@ -4,12 +4,19 @@ Suite de pruebas funcionales (requisito de la 3ra/4ta entrega: "usar IA para gen
 pruebas funcionales de QA"), escrita con **Jest + Supertest** contra la app real (`createApp()`
 de `src/app.ts`), sin mocks del servidor — solo la base de datos es de pruebas.
 
+El sitio público es una SPA de React que consume una API JSON (`/api/*`); estos tests prueban esa
+API directamente (no HTML renderizado). El panel de administración sigue siendo Express + EJS sin
+cambios, así que sus tests siguen probando HTML como antes.
+
 ## Qué cubren
 
-- `publico.test.ts` — carta pública, validación del id del restaurante, `/health`.
-- `auth.test.ts` — login correcto/incorrecto, CSRF, control de acceso al panel admin (VUL-13/VUL-14).
-- `carrito.test.ts` — agregar al carrito, checkout real (crea un pedido), carrito con ítems de
-  varios restaurantes (crea un pedido separado por cada restaurante), carrito vacío.
+- `publico.test.ts` — `/api/restaurantes` (listado), `/api/restaurantes/:slug` (carta pública por
+  slug, no por id), `/health`.
+- `auth.test.ts` — `/api/login` correcto/incorrecto, CSRF por header, control de acceso al panel
+  admin (VUL-13/VUL-14).
+- `carrito.test.ts` — agregar al carrito vía `/api/carrito/*`, checkout real (crea un pedido),
+  carrito con ítems de varios restaurantes (crea un pedido separado por cada restaurante), carrito
+  vacío.
 - `admin.test.ts` — dashboard, crear categoría, validación de foto obligatoria, toggle de carta.
 - `ventas.test.ts` — cambiar el estado de un pedido (y que no se pueda cambiar el de otro
   restaurante — IDOR), panel General de Ventas (todos los restaurantes juntos). Va en su propio

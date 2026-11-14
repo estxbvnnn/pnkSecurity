@@ -11,6 +11,7 @@ RUN npm ci
 COPY tsconfig.json tsconfig.client.json ./
 COPY scripts ./scripts
 COPY src ./src
+COPY frontend ./frontend
 
 RUN npm run build
 

@@ -22,12 +22,21 @@ export function createApp(): Express {
   app.use(csrfToken);
 
   app.use(express.static(path.join(__dirname, "public")));
+  // Assets de la SPA de React (JS/CSS con hash, ver frontend/vite.config.ts).
+  app.use(express.static(path.join(__dirname, "public-spa")));
 
   // Usado por Docker/Jenkins para verificar que la app está viva.
   app.get("/health", (_req, res) => res.status(200).json({ ok: true }));
 
   app.use("/admin", adminRouter);
-  app.use(router);
+  app.use("/api", router);
+
+  // Fallback de la SPA: cualquier otra ruta GET (/, /africarestobar, /carrito,
+  // etc.) sirve el index.html de React, que resuelve la ruta en el cliente
+  // (react-router) y pide los datos a /api/*.
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(__dirname, "public-spa", "index.html"));
+  });
 
   app.use(notFoundHandler);
   app.use(errorHandler);

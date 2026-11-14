@@ -1,7 +1,7 @@
 import request from "supertest";
 import { createApp } from "../src/app";
 import { pool } from "../src/config/db";
-import { csrfDeMeta, csrfDeFormulario } from "./helpers";
+import { csrfDeApi } from "./helpers";
 
 const app = createApp();
 
@@ -12,13 +12,9 @@ describe("Carrito y checkout", () => {
 
   it("agregar un producto válido al carrito responde ok con su posición", async () => {
     const agent = request.agent(app);
-    const home = await agent.get("/restaurante/1");
-    const csrf = csrfDeMeta(home.text);
+    const csrf = await csrfDeApi(agent);
 
-    const res = await agent
-      .post("/carrito/agregar")
-      .set("X-CSRF-Token", csrf)
-      .send({ itemId: 1, csrfToken: csrf });
+    const res = await agent.post("/api/carrito/agregar").set("X-CSRF-Token", csrf).send({ itemId: 1 });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true, posicion: 1 });
@@ -26,13 +22,9 @@ describe("Carrito y checkout", () => {
 
   it("agregar un producto inexistente devuelve 404", async () => {
     const agent = request.agent(app);
-    const home = await agent.get("/restaurante/1");
-    const csrf = csrfDeMeta(home.text);
+    const csrf = await csrfDeApi(agent);
 
-    const res = await agent
-      .post("/carrito/agregar")
-      .set("X-CSRF-Token", csrf)
-      .send({ itemId: 999999, csrfToken: csrf });
+    const res = await agent.post("/api/carrito/agregar").set("X-CSRF-Token", csrf).send({ itemId: 999999 });
 
     expect(res.status).toBe(404);
     expect(res.body.ok).toBe(false);
@@ -40,43 +32,39 @@ describe("Carrito y checkout", () => {
 
   it("confirmar el carrito crea un pedido real y lo vacía", async () => {
     const agent = request.agent(app);
-    const home = await agent.get("/restaurante/1");
-    const csrfMeta = csrfDeMeta(home.text);
+    const csrf = await csrfDeApi(agent);
 
-    await agent.post("/carrito/agregar").set("X-CSRF-Token", csrfMeta).send({ itemId: 1, csrfToken: csrfMeta });
+    await agent.post("/api/carrito/agregar").set("X-CSRF-Token", csrf).send({ itemId: 1 });
 
-    const carrito = await agent.get("/carrito");
-    expect(carrito.text).toContain("Ensalada Cesar");
-    const csrfForm = csrfDeFormulario(carrito.text);
+    const carrito = await agent.get("/api/carrito");
+    expect(carrito.body.carrito.map((i: { nombre: string }) => i.nombre)).toContain("Ensalada Cesar");
 
-    const confirmar = await agent.post("/carrito/confirmar").type("form").send({ csrfToken: csrfForm });
+    const confirmar = await agent.post("/api/carrito/confirmar").set("X-CSRF-Token", csrf);
     expect(confirmar.status).toBe(200);
-    expect(confirmar.text).toContain("Pedido confirmado");
+    expect(confirmar.body.pedidos).toHaveLength(1);
 
     // El carrito debe quedar vacío después de confirmar (no se puede duplicar el pedido).
-    const carritoVacio = await agent.get("/carrito");
-    expect(carritoVacio.text).toContain("Tu carrito está vacío");
+    const carritoVacio = await agent.get("/api/carrito");
+    expect(carritoVacio.body.carrito).toEqual([]);
   });
 
   it("un carrito con ítems de 2 restaurantes distintos crea un pedido separado por cada restaurante", async () => {
     const agent = request.agent(app);
-    const home = await agent.get("/restaurante/1");
-    const csrfMeta = csrfDeMeta(home.text);
+    const csrf = await csrfDeApi(agent);
 
     // Ítem 1 (Ensalada Cesar) es del restaurante 1; ítem 3 (Ceviche) es del
     // restaurante 2 — se agregan los dos al mismo carrito de sesión.
-    await agent.post("/carrito/agregar").set("X-CSRF-Token", csrfMeta).send({ itemId: 1, csrfToken: csrfMeta });
-    await agent.post("/carrito/agregar").set("X-CSRF-Token", csrfMeta).send({ itemId: 3, csrfToken: csrfMeta });
+    await agent.post("/api/carrito/agregar").set("X-CSRF-Token", csrf).send({ itemId: 1 });
+    await agent.post("/api/carrito/agregar").set("X-CSRF-Token", csrf).send({ itemId: 3 });
 
-    const carrito = await agent.get("/carrito");
-    expect(carrito.text).toContain("Ensalada Cesar");
-    expect(carrito.text).toContain("Ceviche");
-    expect(carrito.text).toContain("restaurantes distintos");
-    const csrfForm = csrfDeFormulario(carrito.text);
+    const carrito = await agent.get("/api/carrito");
+    const nombres = carrito.body.carrito.map((i: { nombre: string }) => i.nombre);
+    expect(nombres).toContain("Ensalada Cesar");
+    expect(nombres).toContain("Ceviche");
 
-    const confirmar = await agent.post("/carrito/confirmar").type("form").send({ csrfToken: csrfForm });
+    const confirmar = await agent.post("/api/carrito/confirmar").set("X-CSRF-Token", csrf);
     expect(confirmar.status).toBe(200);
-    expect(confirmar.text).toContain("¡Pedidos confirmados!");
+    expect(confirmar.body.pedidos).toHaveLength(2);
 
     const { rows } = await pool.query(
       `SELECT p.restaurante_id, dp.nombre
@@ -91,18 +79,15 @@ describe("Carrito y checkout", () => {
     expect(porRestaurante.get("Ceviche")).toBe(2);
   });
 
-  it("confirmar un carrito vacío no crea un pedido (validación server-side: la vista ni siquiera muestra el botón)", async () => {
+  it("confirmar un carrito vacío responde 400 (validación server-side)", async () => {
     const agent = request.agent(app);
-    await agent.get("/restaurante/1");
-    const carrito = await agent.get("/carrito");
-    expect(carrito.text).toContain("Tu carrito está vacío");
-    // La vista no renderiza el formulario de confirmar cuando el carrito está
-    // vacío (no hay botón que mostrar) — el token se saca del <meta>, que sí
-    // está siempre presente, para probar igual la validación del servidor.
-    const csrf = csrfDeMeta(carrito.text);
+    const csrf = await csrfDeApi(agent);
 
-    const res = await agent.post("/carrito/confirmar").type("form").send({ csrfToken: csrf });
-    expect(res.status).toBe(302);
-    expect(res.headers.location).toContain("error=vacio");
+    const carrito = await agent.get("/api/carrito");
+    expect(carrito.body.carrito).toEqual([]);
+
+    const res = await agent.post("/api/carrito/confirmar").set("X-CSRF-Token", csrf);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("carrito_vacio");
   });
 });

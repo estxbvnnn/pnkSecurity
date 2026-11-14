@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import { authenticator } from "otplib";
@@ -18,10 +19,17 @@ function completarSesion(
     req.session.nombre = usuario.nombre;
     req.session.rol = usuario.rol;
     req.session.restauranteId = restauranteId;
-    res.redirect(`/restaurante/${restauranteId}`);
+    // regenerate() borra el csrfToken anterior junto con el resto de la
+    // sesión vieja: se genera uno nuevo y se devuelve en la respuesta para
+    // que el frontend (SPA, sin recarga de página) actualice el que tiene
+    // en memoria. Sin esto, la primera acción después de loguearse (ej.
+    // confirmar el carrito) sería rechazada por CSRF inválido.
+    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
+    res.json({ ok: true, nombre: usuario.nombre, rol: usuario.rol, csrfToken: req.session.csrfToken });
   });
 }
 
+/** POST /api/login */
 export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     // El restaurante que se estaba viendo se captura ANTES de regenerar la
@@ -41,7 +49,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
 
     if (!usuario || !valido || usuario.estado !== "1") {
       registrarEvento(req, "login_fallido", { email });
-      res.redirect(`/restaurante/${restauranteId}?login=error`);
+      res.status(401).json({ ok: false, error: "credenciales_invalidas" });
       return;
     }
 
@@ -51,7 +59,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     if (usuario.rol === "admin" && usuario.dosfaHabilitado && usuario.secreto2fa) {
       req.session.pendiente2fa = { usuarioId: usuario.id, restauranteId };
       registrarEvento(req, "login_password_ok_esperando_2fa", { usuarioId: usuario.id });
-      res.redirect(`/login/2fa`);
+      res.json({ ok: true, requiere2fa: true });
       return;
     }
 
@@ -62,22 +70,12 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
   }
 }
 
-export function mostrarFormulario2fa(req: Request, res: Response): void {
-  if (!req.session.pendiente2fa) {
-    res.redirect("/");
-    return;
-  }
-  res.render("login-2fa", {
-    csrfToken: req.session.csrfToken,
-    error: (req.query.error as string) ?? null,
-  });
-}
-
+/** POST /api/login/2fa */
 export async function verificar2fa(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const pendiente = req.session.pendiente2fa;
     if (!pendiente) {
-      res.redirect("/");
+      res.status(400).json({ ok: false, error: "sin_login_pendiente" });
       return;
     }
 
@@ -91,7 +89,7 @@ export async function verificar2fa(req: Request, res: Response, next: NextFuncti
 
     if (!usuario || !valido) {
       registrarEvento(req, "2fa_codigo_invalido", { usuarioId: pendiente.usuarioId });
-      res.redirect(`/login/2fa?error=1`);
+      res.status(401).json({ ok: false, error: "codigo_invalido" });
       return;
     }
 
@@ -103,11 +101,19 @@ export async function verificar2fa(req: Request, res: Response, next: NextFuncti
   }
 }
 
+/** GET /api/sesion — con qué usuario (si hay alguno) arranca la SPA. */
+export function sesion(req: Request, res: Response): void {
+  res.json({
+    nombreUsuario: req.session.nombre ?? null,
+    esAdmin: req.session.rol === "admin",
+  });
+}
+
+/** POST /api/logout */
 export function logout(req: Request, res: Response, next: NextFunction): void {
-  const restauranteId = idValido(req.session.restauranteId) ?? 1;
   req.session.destroy((err) => {
     if (err) return next(err);
     res.clearCookie("cartaSid");
-    res.redirect(`/restaurante/${restauranteId}`);
+    res.json({ ok: true });
   });
 }

@@ -1,0 +1,886 @@
+:root {
+  --color-bg: #fbf7f1;
+  --color-surface: #ffffff;
+  --color-ink: #231c16;
+  --color-ink-soft: #5c5248;
+  --color-border: #e8e0d4;
+  --color-primary: #b8502e;
+  --color-primary-dark: #8f3b20;
+  --color-primary-soft: #f3e3da;
+  --color-accent: #2f6b4f;
+  --color-danger: #b33a3a;
+  --color-success: #2f6b4f;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  --shadow-sm: 0 1px 2px rgba(35, 28, 22, 0.06), 0 1px 1px rgba(35, 28, 22, 0.04);
+  --shadow-md: 0 8px 24px -8px rgba(35, 28, 22, 0.18);
+  --shadow-lg: 0 24px 48px -16px rgba(35, 28, 22, 0.28);
+
+  --container-width: 1180px;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--color-ink);
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.contenedor {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Botones --- */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.boton:active {
+  transform: scale(0.97);
+}
+
+.boton--primario {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.boton--primario:hover {
+  background: var(--color-primary-dark);
+}
+
+.boton--fantasma {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-ink);
+}
+
+.boton--fantasma:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.boton--peligro {
+  background: transparent;
+  color: var(--color-danger);
+  border-color: transparent;
+}
+
+.boton--peligro:hover {
+  background: rgba(179, 58, 58, 0.08);
+}
+
+.boton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.boton--bloque {
+  width: 100%;
+}
+
+/* --- Tarjeta genérica --- */
+.tarjeta {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Campos de formulario --- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+.campo input,
+.campo textarea {
+  font-family: inherit;
+  font-size: 0.98rem;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.campo input:focus,
+.campo textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.campo-error {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+}
+
+/* --- Skeleton / loading --- */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-border) 25%, #f3ede1 37%, var(--color-border) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-barrido 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-barrido {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* --- Utilidades --- */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Hero (portada) --- */
+.hero {
+  background: linear-gradient(180deg, var(--color-primary-soft) 0%, var(--color-bg) 100%);
+  padding: 72px 0 56px;
+}
+
+.hero__contenido {
+  max-width: 640px;
+}
+
+.hero__etiqueta {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 14px;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  margin-bottom: 14px;
+}
+
+.hero__subtitulo {
+  color: var(--color-ink-soft);
+  font-size: 1.08rem;
+}
+
+.seccion {
+  padding: 48px 0 64px;
+}
+
+.estado-vacio {
+  color: var(--color-ink-soft);
+  text-align: center;
+  padding: 48px 0;
+}
+
+/* --- Grilla de restaurantes --- */
+.grilla-restaurantes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 26px;
+}
+
+.tarjeta-restaurante {
+  display: block;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-restaurante:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.tarjeta-restaurante__foto-wrap {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--color-border);
+}
+
+.tarjeta-restaurante__foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.tarjeta-restaurante:hover .tarjeta-restaurante__foto {
+  transform: scale(1.05);
+}
+
+.tarjeta-restaurante__foto--vacia {
+  background: var(--color-primary-soft);
+}
+
+.tarjeta-restaurante__cuerpo {
+  padding: 18px 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tarjeta-restaurante__cuerpo h3 {
+  font-size: 1.1rem;
+}
+
+.tarjeta-restaurante__cta {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.tarjeta-restaurante--skeleton {
+  pointer-events: none;
+}
+
+/* --- Carta (portada de un restaurante) --- */
+.carta-portada {
+  background-color: var(--color-ink);
+  background-size: cover;
+  background-position: center;
+  min-height: 260px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.carta-portada__contenido {
+  padding: 32px 0 36px;
+  color: #fff;
+}
+
+.carta-portada__contenido h1 {
+  color: #fff;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  margin-bottom: 8px;
+}
+
+.carta-portada__contenido p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+}
+
+.seccion-carta {
+  margin-bottom: 44px;
+}
+
+.seccion-carta > h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--color-primary-soft);
+}
+
+.categoria-bloque {
+  margin-bottom: 26px;
+}
+
+.categoria-bloque h3 {
+  font-size: 1.05rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 14px;
+}
+
+.estado-vacio--chico {
+  padding: 0;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.grilla-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.item-tarjeta {
+  display: flex;
+  gap: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease;
+}
+
+.item-tarjeta:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.item-tarjeta__foto {
+  width: 84px;
+  height: 84px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.item-tarjeta__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-tarjeta__encabezado {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.item-tarjeta__encabezado h4 {
+  font-size: 1rem;
+}
+
+.item-tarjeta__precio {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+
+.item-tarjeta__descripcion {
+  font-size: 0.86rem;
+  color: var(--color-ink-soft);
+}
+
+.item-tarjeta__tiempo {
+  font-size: 0.78rem;
+  color: var(--color-ink-soft);
+}
+
+.item-tarjeta .boton {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* --- Comentarios --- */
+.seccion-comentarios {
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--color-border);
+}
+
+.seccion-comentarios > h2 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.comentario-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  align-items: flex-start;
+}
+
+.comentario-form textarea {
+  flex: 1;
+  font-family: inherit;
+  font-size: 0.92rem;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  resize: vertical;
+}
+
+.comentario-form textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.lista-comentarios {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lista-comentarios li {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+}
+
+.lista-comentarios strong {
+  font-size: 0.85rem;
+  color: var(--color-primary-dark);
+}
+
+.lista-comentarios p {
+  margin-top: 4px;
+  font-size: 0.92rem;
+}
+
+/* --- Carrito --- */
+.seccion--angosta {
+  max-width: 640px;
+}
+
+.titulo-pagina {
+  font-size: 1.8rem;
+  margin-bottom: 28px;
+}
+
+.estado-vacio-tarjeta {
+  text-align: center;
+  padding: 56px 24px;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  color: var(--color-ink-soft);
+}
+
+.lista-carrito {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista-carrito li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+}
+
+.lista-carrito__nombre {
+  font-weight: 600;
+}
+
+.lista-carrito__restaurante {
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+  margin-top: 2px;
+}
+
+.lista-carrito__derecha {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 600;
+}
+
+.aviso-multi-restaurante {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.total-carrito {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.3rem;
+  padding: 18px 0;
+  border-top: 2px solid var(--color-border);
+  margin-bottom: 20px;
+}
+
+.carrito-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* --- Confirmación de pedido --- */
+.confirmacion {
+  text-align: center;
+  padding: 44px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.confirmacion__icono {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-success);
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.confirmacion__pedido {
+  width: 100%;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 6px;
+}
+
+.confirmacion__restaurante {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.confirmacion__numero {
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+}
+
+.confirmacion__total {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--color-primary-dark);
+  margin-top: 4px;
+}
+
+.confirmacion .boton {
+  margin-top: 10px;
+}
+
+/* --- Header / Layout --- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(251, 247, 241, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+.header__marca {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.header__acciones {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.header__usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header__saludo {
+  font-size: 0.9rem;
+  color: var(--color-ink-soft);
+}
+
+.boton--chico {
+  padding: 7px 16px;
+  font-size: 0.85rem;
+}
+
+.header__carrito {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--color-ink);
+  transition: background-color 0.15s ease;
+}
+
+.header__carrito:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.header__carrito-contador {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid var(--color-bg);
+}
+
+.main {
+  flex: 1;
+}
+
+.footer {
+  border-top: 1px solid var(--color-border);
+  padding: 28px 0;
+  margin-top: 60px;
+}
+
+.footer__fila {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+@media (max-width: 640px) {
+  .header__saludo {
+    display: none;
+  }
+}
+
+/* --- Toasts --- */
+.toasts {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: calc(100vw - 40px);
+}
+
+.toast {
+  padding: 13px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--color-ink);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  animation: toast-entrar 0.2s ease;
+}
+
+.toast--exito {
+  background: var(--color-success);
+}
+
+.toast--error {
+  background: var(--color-danger);
+}
+
+@keyframes toast-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Modal --- */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(35, 28, 22, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  padding: 20px;
+  animation: modal-fondo-entrar 0.15s ease;
+}
+
+@keyframes modal-fondo-entrar {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-caja {
+  position: relative;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 400px;
+  animation: modal-caja-entrar 0.2s ease;
+}
+
+@keyframes modal-caja-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.modal-cerrar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--color-ink-soft);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background-color 0.15s ease;
+}
+
+.modal-cerrar:hover {
+  background: var(--color-bg);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-form h2 {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.modal-texto-ayuda {
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+  margin-top: -8px;
+}
+
+@media (max-width: 640px) {
+  .contenedor {
+    padding: 0 16px;
+  }
+
+  .toasts {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+}

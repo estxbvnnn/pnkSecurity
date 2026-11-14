@@ -8,12 +8,21 @@ import { env } from "../config/env";
  * servidor, nunca en la respuesta HTTP.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
+export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction): void {
   console.error("Error no controlado:", err);
   if (res.headersSent) return;
-  res.status(500).send(env.isProd ? "Error interno del servidor." : `Error interno: ${err.message}`);
+  const mensaje = env.isProd ? "Error interno del servidor." : `Error interno: ${err.message}`;
+  if (req.path.startsWith("/api/")) {
+    res.status(500).json({ ok: false, error: mensaje });
+    return;
+  }
+  res.status(500).send(mensaje);
 }
 
-export function notFoundHandler(_req: Request, res: Response): void {
+export function notFoundHandler(req: Request, res: Response): void {
+  if (req.path.startsWith("/api/")) {
+    res.status(404).json({ ok: false, error: "no_encontrado" });
+    return;
+  }
   res.status(404).send("Página no encontrada.");
 }

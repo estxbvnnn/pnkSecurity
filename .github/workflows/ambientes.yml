@@ -253,9 +253,9 @@ jobs:
       - name: Preparar el código fuente para la auditoría
         run: |
           {
-            echo "Código fuente completo de la aplicación (backend Express/TypeScript, Carta Digital) a auditar."
+            echo "Código fuente completo de la aplicación (backend Express/TypeScript + frontend React/TypeScript, Carta Digital) a auditar."
             echo
-            for f in $(find src -name "*.ts" | sort); do
+            for f in $(find src frontend/src -name "*.ts" -o -name "*.tsx" 2>/dev/null | sort); do
               echo "### Archivo: $f"
               echo '```typescript'
               cat "$f"

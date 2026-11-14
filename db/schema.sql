@@ -31,6 +31,7 @@ CREATE TABLE restaurantes (
   id            SERIAL PRIMARY KEY,
   rut           VARCHAR(11)  NOT NULL,
   nombre        VARCHAR(200) NOT NULL,
+  slug          VARCHAR(100) NOT NULL UNIQUE,
   fono          VARCHAR(45)  NOT NULL,
   mapa          VARCHAR(200),
   foto          VARCHAR(200),
@@ -129,9 +130,9 @@ CREATE TABLE detalle_pedido (
 INSERT INTO direcciones (calle, numero, comuna, region) VALUES
   ('Los Arandanos', '1550', 'La Serena', 'Coquimbo');
 
-INSERT INTO restaurantes (rut, nombre, fono, foto, email, direccion_id) VALUES
-  ('99887766-5', 'Afríca Restobar', '22334455', 'resto1.jpg', 'mail@correo.cl', 1),
-  ('11223344-6', 'Bahía Restaurant', '22998877', 'resto2.jpg', 'mail2@correo.cl', 1);
+INSERT INTO restaurantes (rut, nombre, slug, fono, foto, email, direccion_id) VALUES
+  ('99887766-5', 'Afríca Restobar', 'africarestobar', '22334455', 'resto1.jpg', 'mail@correo.cl', 1),
+  ('11223344-6', 'Bahía Restaurant', 'bahiarestaurant', '22998877', 'resto2.jpg', 'mail2@correo.cl', 1);
 
 INSERT INTO cartas (nombre, orden, visible, foto, restaurante_id) VALUES
   ('Entradas', 1, TRUE, 'carta3.jpg', 1),

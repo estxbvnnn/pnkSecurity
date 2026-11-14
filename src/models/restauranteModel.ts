@@ -1,4 +1,5 @@
 import { pool } from "../config/db";
+import { slugify } from "../utils/slugify";
 import { Restaurante, RestauranteAdmin, RestauranteInput, RestauranteResumen } from "../types/models";
 
 /** Lista liviana de restaurantes (solo id + nombre) — usada en el selector del panel admin. */
@@ -12,19 +13,32 @@ export async function listarRestaurantes(): Promise<{ id: number; nombre: string
 /** Listado público (landing "/"): un card por restaurante activo, con su foto. */
 export async function listarRestaurantesPublico(): Promise<RestauranteResumen[]> {
   const { rows } = await pool.query<RestauranteResumen>(
-    `SELECT id, nombre, foto FROM restaurantes WHERE eliminado IS NULL ORDER BY nombre ASC`
+    `SELECT id, nombre, slug, foto FROM restaurantes WHERE eliminado IS NULL ORDER BY nombre ASC`
   );
   return rows;
 }
 
 export async function obtenerRestaurante(id: number): Promise<Restaurante | null> {
   const { rows } = await pool.query<Restaurante>(
-    `SELECT r.id, r.nombre, r.fono, r.email, r.foto,
+    `SELECT r.id, r.nombre, r.slug, r.fono, r.email, r.foto,
             d.calle, d.numero, d.comuna, d.region
        FROM restaurantes r
        JOIN direcciones d ON d.id = r.direccion_id
       WHERE r.id = $1 AND r.eliminado IS NULL`,
     [id]
+  );
+  return rows[0] ?? null;
+}
+
+/** Igual que obtenerRestaurante, pero por slug — usado por la API pública (sin exponer ids). */
+export async function obtenerRestaurantePorSlug(slug: string): Promise<Restaurante | null> {
+  const { rows } = await pool.query<Restaurante>(
+    `SELECT r.id, r.nombre, r.slug, r.fono, r.email, r.foto,
+            d.calle, d.numero, d.comuna, d.region
+       FROM restaurantes r
+       JOIN direcciones d ON d.id = r.direccion_id
+      WHERE r.slug = $1 AND r.eliminado IS NULL`,
+    [slug]
   );
   return rows[0] ?? null;
 }
@@ -58,6 +72,26 @@ export async function obtenerRestauranteAdmin(id: number): Promise<RestauranteAd
   return rows[0] ?? null;
 }
 
+/**
+ * Genera un slug único para un restaurante nuevo (ej. "restopenka"; si ya
+ * existe, "restopenka2", "restopenka3", etc.). Se calcula UNA vez al crear
+ * el restaurante — renombrarlo después no cambia su URL pública.
+ */
+async function generarSlugUnico(cliente: import("pg").PoolClient, nombre: string): Promise<string> {
+  const base = slugify(nombre) || "restaurante";
+  let candidato = base;
+  let sufijo = 2;
+  for (;;) {
+    const { rows } = await cliente.query<{ existe: boolean }>(
+      `SELECT EXISTS(SELECT 1 FROM restaurantes WHERE slug = $1) AS existe`,
+      [candidato]
+    );
+    if (!rows[0].existe) return candidato;
+    candidato = `${base}${sufijo}`;
+    sufijo++;
+  }
+}
+
 /** Crea la dirección y el restaurante en una sola transacción. Devuelve el id nuevo. */
 export async function crearRestaurante(datos: RestauranteInput): Promise<number> {
   const cliente = await pool.connect();
@@ -69,10 +103,11 @@ export async function crearRestaurante(datos: RestauranteInput): Promise<number>
     );
     const direccionId = direccionRows[0].id;
 
+    const slug = await generarSlugUnico(cliente, datos.nombre);
     const { rows: restauranteRows } = await cliente.query<{ id: number }>(
-      `INSERT INTO restaurantes (rut, nombre, fono, email, foto, direccion_id)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [datos.rut, datos.nombre, datos.fono, datos.email || null, datos.foto ?? null, direccionId]
+      `INSERT INTO restaurantes (rut, nombre, slug, fono, email, foto, direccion_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [datos.rut, datos.nombre, slug, datos.fono, datos.email || null, datos.foto ?? null, direccionId]
     );
 
     await cliente.query("COMMIT");
