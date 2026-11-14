@@ -15,58 +15,54 @@ export function Listado(): JSX.Element {
   }, []);
 
   return (
-    <div>
-      <section className="hero">
-        <div className="contenedor hero__contenido">
-          <span className="hero__etiqueta">Carta Digital</span>
-          <h1>Elegí un restaurante y mirá su carta</h1>
-          <p className="hero__subtitulo">Menús actualizados al instante, pedidos desde la mesa.</p>
+    <section>
+      <div className="container contendor my-4">
+        <div className="text-center mb-4">
+          <img className="logosintituciones" src="/img/logo.png" width="190" alt="" />
+          <h3 className="mt-3">Elige un restaurante</h3>
         </div>
-      </section>
 
-      <section className="contenedor seccion">
         {error && <p className="estado-vacio">No se pudo cargar el listado de restaurantes. Probá de nuevo más tarde.</p>}
 
-        {!restaurantes && !error && (
-          <div className="grilla-restaurantes">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="tarjeta-restaurante tarjeta-restaurante--skeleton">
-                <div className="skeleton tarjeta-restaurante__foto" />
-                <div className="tarjeta-restaurante__cuerpo">
-                  <div className="skeleton" style={{ height: 20, width: "70%" }} />
+        <div className="row">
+          {!restaurantes &&
+            !error &&
+            Array.from({ length: 6 }).map((_, i) => (
+              <div className="col-lg-4 col-md-6 mb-4" key={i}>
+                <div className="featured-item h-100 text-center p-3">
+                  <div className="skeleton mb-2" style={{ width: 140, height: 140, margin: "0 auto" }} />
+                  <div className="skeleton" style={{ height: 20, width: "70%", margin: "0 auto" }} />
                 </div>
               </div>
             ))}
-          </div>
-        )}
 
-        {restaurantes && restaurantes.length === 0 && (
-          <p className="estado-vacio">Todavía no hay restaurantes publicados.</p>
-        )}
-
-        {restaurantes && restaurantes.length > 0 && (
-          <div className="grilla-restaurantes">
-            {restaurantes.map((r) => {
+          {restaurantes &&
+            restaurantes.map((r) => {
               const foto = fotoUrl(r.id, r.foto);
               return (
-                <Link to={`/${r.slug}`} key={r.id} className="tarjeta-restaurante">
-                  <div className="tarjeta-restaurante__foto-wrap">
-                    {foto ? (
-                      <img src={foto} alt={r.nombre} className="tarjeta-restaurante__foto" loading="lazy" />
-                    ) : (
-                      <div className="tarjeta-restaurante__foto tarjeta-restaurante__foto--vacia" />
-                    )}
-                  </div>
-                  <div className="tarjeta-restaurante__cuerpo">
-                    <h3>{r.nombre}</h3>
-                    <span className="tarjeta-restaurante__cta">Ver carta →</span>
-                  </div>
-                </Link>
+                <div className="col-lg-4 col-md-6 mb-4" key={r.id}>
+                  <Link className="text-decoration-none" to={`/${r.slug}`}>
+                    <div className="featured-item h-100 text-center p-3">
+                      <img
+                        className="card-img rounded-0 mb-2"
+                        width="140"
+                        height="140"
+                        style={{ objectFit: "contain" }}
+                        src={foto ?? "/img/logo_empresa_comodin.png"}
+                        alt=""
+                      />
+                      <h5>{r.nombre}</h5>
+                    </div>
+                  </Link>
+                </div>
               );
             })}
-          </div>
+        </div>
+
+        {restaurantes && restaurantes.length === 0 && (
+          <p className="text-center text-muted">No hay restaurantes disponibles todavía.</p>
         )}
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

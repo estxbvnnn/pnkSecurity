@@ -19,6 +19,13 @@ export default defineConfig({
     // llamadas /api al backend real.
     proxy: {
       "/api": "http://localhost:3000",
+      // Hojas de estilo/imágenes heredadas del sitio original (Bootstrap,
+      // themify-icons, style.css/custom.css, fotos de restaurantes): viven
+      // en src/public, servidas por el server real en :3000.
+      "/vendors": "http://localhost:3000",
+      "/css": "http://localhost:3000",
+      "/img": "http://localhost:3000",
+      "/imagenes": "http://localhost:3000",
     },
   },
 });

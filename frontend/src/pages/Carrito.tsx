@@ -29,21 +29,23 @@ export function Carrito(): JSX.Element {
 
   if (pedidosConfirmados) {
     return (
-      <div className="contenedor seccion seccion--angosta">
-        <div className="tarjeta confirmacion">
-          <div className="confirmacion__icono">✓</div>
+      <div className="container">
+        <div className="confirmacion">
+          <div className="confirmacion__icono">
+            <i className="ti-check" />
+          </div>
           <h2>{pedidosConfirmados.length > 1 ? "¡Pedidos confirmados!" : "¡Pedido confirmado!"}</h2>
           {pedidosConfirmados.map((p) => (
             <div key={p.id} className="confirmacion__pedido">
               {pedidosConfirmados.length > 1 && <p className="confirmacion__restaurante">{p.restauranteNombre}</p>}
-              <p className="confirmacion__numero">
+              <p>
                 N.º de pedido: <strong>#{p.id}</strong>
               </p>
               <p className="confirmacion__total">{formatearCLP(p.total)}</p>
             </div>
           ))}
-          <p className="modal-texto-ayuda">Avisale al garzón tu número de pedido para que lo prepare.</p>
-          <Link to="/" className="boton boton--primario">
+          <p className="texto-ayuda mt-2">Avisale al garzón tu número de pedido para que lo prepare.</p>
+          <Link to="/" className="button mt-2 d-inline-block">
             Volver al inicio
           </Link>
         </div>
@@ -53,71 +55,95 @@ export function Carrito(): JSX.Element {
 
   if (cargando) {
     return (
-      <div className="contenedor seccion seccion--angosta">
-        <div className="skeleton" style={{ height: 240, borderRadius: 22 }} />
+      <div className="container my-4">
+        <div className="skeleton" style={{ height: 200 }} />
       </div>
     );
   }
 
   return (
-    <div className="contenedor seccion seccion--angosta">
-      <h1 className="titulo-pagina">Tu carrito</h1>
-
-      {items.length === 0 ? (
-        <div className="estado-vacio-tarjeta">
-          <p>Tu carrito está vacío.</p>
-          <Link to="/" className="boton boton--primario">
-            Ver restaurantes
-          </Link>
-        </div>
-      ) : (
-        <>
-          <ul className="lista-carrito">
-            {items.map((item) => (
-              <li key={item.posicion}>
-                <div>
-                  <p className="lista-carrito__nombre">{item.nombre}</p>
-                  <p className="lista-carrito__restaurante">{item.restauranteNombre}</p>
-                </div>
-                <div className="lista-carrito__derecha">
-                  <span>{formatearCLP(item.precio)}</span>
-                  <button
-                    className="boton boton--peligro boton--chico"
-                    onClick={() => eliminar(item.posicion)}
-                    aria-label={`Quitar ${item.nombre}`}
-                  >
-                    Quitar
+    <div>
+      <section>
+        <div className="container contendor">
+          <div className="row">
+            <div className="col-lg-12 d-flex justify-content-between align-items-center">
+              <img className="logosintituciones" src="/img/logo.png" width="170" alt="" />
+              <div>
+                <Link className="btn btn-primary" to="/">
+                  Volver a la Carta
+                </Link>
+                {items.length > 0 && (
+                  <button className="btn btn-secondary ms-2" onClick={() => vaciar()}>
+                    Eliminar Todo
                   </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {restaurantesDistintos.length > 1 && (
-            <p className="aviso-multi-restaurante">
-              Tu carrito tiene productos de {restaurantesDistintos.length} restaurantes distintos (
-              {restaurantesDistintos.join(", ")}) — se van a confirmar como pedidos separados, uno por restaurante.
-            </p>
+      <section>
+        <div className="container contendor">
+          <h4 className="text-center">Productos Agregados para Solicitar</h4>
+
+          {items.length === 0 ? (
+            <h5 className="text-center text-muted">Tu carrito está vacío.</h5>
+          ) : (
+            <>
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Restaurante</th>
+                    <th>Precio</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <tr key={item.posicion}>
+                      <td>{item.id}</td>
+                      <td>{item.nombre}</td>
+                      <td>{item.restauranteNombre}</td>
+                      <td>{formatearCLP(item.precio)}</td>
+                      <td>
+                        <a
+                          href="#"
+                          className="text-danger"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            eliminar(item.posicion);
+                          }}
+                        >
+                          <i className="ti-trash" />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {restaurantesDistintos.length > 1 && (
+                <p className="text-center text-muted">
+                  Tu carrito tiene productos de {restaurantesDistintos.length} restaurantes distintos (
+                  {restaurantesDistintos.join(", ")}) — se van a confirmar como pedidos separados, uno por restaurante.
+                </p>
+              )}
+
+              <h3 className="text-center">Total: {formatearCLP(total)}</h3>
+
+              <div className="text-center">
+                <button className="btn btn-success btn-lg" onClick={handleConfirmar} disabled={confirmando}>
+                  {confirmando ? "Confirmando..." : "✅ Confirmar Pedido"}
+                </button>
+              </div>
+              <p className="text-center text-muted mt-2">o avísale directamente al garzón para solicitarlo.</p>
+            </>
           )}
-
-          <div className="total-carrito">
-            <span>Total</span>
-            <strong>{formatearCLP(total)}</strong>
-          </div>
-
-          <div className="carrito-acciones">
-            <button className="boton boton--fantasma" onClick={() => vaciar()}>
-              Vaciar carrito
-            </button>
-            <button className="boton boton--primario boton--bloque" onClick={handleConfirmar} disabled={confirmando}>
-              {confirmando ? "Confirmando..." : "Confirmar pedido"}
-            </button>
-          </div>
-          <p className="modal-texto-ayuda" style={{ textAlign: "center" }}>
-            o avisale directamente al garzón para solicitarlo.
-          </p>
-        </>
-      )}
+        </div>
+      </section>
     </div>
   );
 }

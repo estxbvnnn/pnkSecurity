@@ -48,12 +48,12 @@ export function LoginModal({ onCerrar }: { onCerrar: () => void }): JSX.Element 
     <div className="modal-fondo" onClick={onCerrar}>
       <div className="modal-caja" onClick={(e) => e.stopPropagation()}>
         <button className="modal-cerrar" onClick={onCerrar} aria-label="Cerrar">
-          ✕
+          <i className="ti-close" />
         </button>
 
         {!pidiendo2fa ? (
-          <form onSubmit={enviarLogin} className="modal-form">
-            <h2>Iniciar sesión</h2>
+          <form onSubmit={enviarLogin}>
+            <h2>Ingresar</h2>
             <div className="campo">
               <label htmlFor="login-email">Email</label>
               <input id="login-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -69,14 +69,14 @@ export function LoginModal({ onCerrar }: { onCerrar: () => void }): JSX.Element 
               />
             </div>
             {error && <p className="campo-error">{error}</p>}
-            <button type="submit" className="boton boton--primario boton--bloque" disabled={enviando}>
+            <button type="submit" className="button" disabled={enviando} style={{ width: "100%", border: 0 }}>
               {enviando ? "Entrando..." : "Entrar"}
             </button>
           </form>
         ) : (
-          <form onSubmit={enviar2fa} className="modal-form">
+          <form onSubmit={enviar2fa}>
             <h2>Verificación en dos pasos</h2>
-            <p className="modal-texto-ayuda">Ingresá el código de tu app de autenticación.</p>
+            <p className="texto-ayuda">Ingresá el código de tu app de autenticación.</p>
             <div className="campo">
               <label htmlFor="login-2fa">Código</label>
               <input
@@ -89,7 +89,7 @@ export function LoginModal({ onCerrar }: { onCerrar: () => void }): JSX.Element 
               />
             </div>
             {error && <p className="campo-error">{error}</p>}
-            <button type="submit" className="boton boton--primario boton--bloque" disabled={enviando}>
+            <button type="submit" className="button" disabled={enviando} style={{ width: "100%", border: 0 }}>
               {enviando ? "Verificando..." : "Verificar"}
             </button>
           </form>

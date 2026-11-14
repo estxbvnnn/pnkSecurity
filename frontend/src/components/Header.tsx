@@ -17,49 +17,41 @@ export function Header(): JSX.Element {
   }
 
   return (
-    <header className="header">
-      <div className="contenedor header__fila">
-        <Link to="/" className="header__marca">
+    <nav className="navbar navbar-light bg-light navbar-publica">
+      <div className="container d-flex justify-content-between align-items-center flex-wrap">
+        <Link to="/" className="navbar-brand">
           Carta Digital
         </Link>
 
-        <nav className="header__acciones">
+        <div className="d-flex align-items-center gap-3 flex-wrap">
           {nombreUsuario ? (
-            <div className="header__usuario">
-              <span className="header__saludo">Hola, {nombreUsuario}</span>
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <span>
+                <i className="ti-user" /> {nombreUsuario}
+              </span>
               {esAdmin && (
-                <a className="boton boton--fantasma boton--chico" href="/admin">
-                  Panel admin
+                <a className="btn btn-sm btn-outline-dark" href="/admin">
+                  Administrar Carta
                 </a>
               )}
-              <button className="boton boton--fantasma boton--chico" onClick={cerrarSesion}>
+              <button className="btn btn-sm btn-outline-secondary" onClick={cerrarSesion}>
                 Cerrar sesión
               </button>
             </div>
           ) : (
-            <button className="boton boton--fantasma boton--chico" onClick={() => setMostrarLogin(true)}>
-              Iniciar sesión
+            <button className="btn btn-sm btn-outline-primary" onClick={() => setMostrarLogin(true)}>
+              Ingresar
             </button>
           )}
 
-          <Link to="/carrito" className="header__carrito" aria-label="Ver carrito">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M6 6h15l-1.5 9h-12L5 3H2"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle cx="9" cy="20" r="1.4" fill="currentColor" />
-              <circle cx="17" cy="20" r="1.4" fill="currentColor" />
-            </svg>
-            {cantidad > 0 && <span className="header__carrito-contador">{cantidad}</span>}
+          <Link to="/carrito" className="carrito-link" aria-label="Ver carrito">
+            <i className="ti-shopping-cart" />
+            {cantidad > 0 && <span className="carrito-badge">{cantidad}</span>}
           </Link>
-        </nav>
+        </div>
       </div>
 
       {mostrarLogin && <LoginModal onCerrar={() => setMostrarLogin(false)} />}
-    </header>
+    </nav>
   );
 }
