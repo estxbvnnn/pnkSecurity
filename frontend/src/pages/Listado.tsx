@@ -15,9 +15,16 @@ export function Listado(): JSX.Element {
   }, []);
 
   return (
-    <div className="contenedor seccion">
-      <h1 className="titulo-pagina">Elegí un restaurante</h1>
+    <div>
+      <section className="hero-publico">
+        <div className="contenedor">
+          <span className="hero-publico__etiqueta">Carta Digital</span>
+          <h1>Elegí un restaurante y mirá su carta</h1>
+          <p>Menús actualizados al instante, pedidos desde la mesa.</p>
+        </div>
+      </section>
 
+      <div className="contenedor seccion" style={{ paddingTop: 0 }}>
       {error && <p className="estado-vacio">No se pudo cargar el listado de restaurantes. Probá de nuevo más tarde.</p>}
 
       {!restaurantes && !error && (
@@ -65,6 +72,7 @@ export function Listado(): JSX.Element {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

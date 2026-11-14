@@ -213,7 +213,10 @@ export function Carta(): JSX.Element {
 
   return (
     <div>
-      <section className="portada-restaurante">
+      <section
+        className="portada-restaurante"
+        style={fotoRestaurante ? { backgroundImage: `url(${fotoRestaurante})` } : undefined}
+      >
         <div className="contenedor portada-restaurante__fila">
           <img className="portada-restaurante__foto" src={fotoRestaurante ?? "/img/logo_empresa_comodin.png"} alt="" />
           <div className="portada-restaurante__datos">

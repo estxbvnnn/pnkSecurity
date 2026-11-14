@@ -20,6 +20,9 @@ export function Header(): JSX.Element {
     <header className="barra-publica">
       <div className="contenedor barra-publica__fila">
         <Link to="/" className="barra-publica__marca">
+          <span className="barra-publica__marca-icono">
+            <i className="ti-receipt" />
+          </span>
           Carta Digital
         </Link>
 

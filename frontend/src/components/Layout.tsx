@@ -8,7 +8,14 @@ export function Layout(): JSX.Element {
       <main className="main">
         <Outlet />
       </main>
-      <footer className="text-center text-muted small py-3">© {new Date().getFullYear()} Carta Digital</footer>
+      <footer className="pie-publico">
+        <div className="contenedor pie-publico__fila">
+          <span className="pie-publico__marca">
+            <i className="ti-receipt" /> Carta Digital
+          </span>
+          <span className="pie-publico__nota">© {new Date().getFullYear()} — Menús digitales, pedidos desde la mesa.</span>
+        </div>
+      </footer>
     </>
   );
 }
