@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSesion } from "../context/SessionContext";
 import { useToast } from "../context/ToastContext";
 
@@ -44,7 +45,7 @@ export function LoginModal({ onCerrar }: { onCerrar: () => void }): JSX.Element 
     onCerrar();
   }
 
-  return (
+  return createPortal(
     <div className="modal-fondo" onClick={onCerrar}>
       <div className="modal-caja" onClick={(e) => e.stopPropagation()}>
         <button className="modal-cerrar" onClick={onCerrar} aria-label="Cerrar">
@@ -97,6 +98,7 @@ export function LoginModal({ onCerrar }: { onCerrar: () => void }): JSX.Element 
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
