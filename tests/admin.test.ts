@@ -84,15 +84,22 @@ describe("Panel de administración", () => {
     const res = await agent.post("/admin/cartas/1/toggle").type("form").send({ csrfToken: csrf });
     expect(res.status).toBe(302);
 
-    const publica = await agent.get("/restaurante/1");
-    expect(publica.text).not.toContain("Ensalada Cesar");
+    const publica = await agent.get("/api/restaurantes/africarestobar");
+    const nombresOcultos = publica.body.secciones.flatMap((s: { categoriasConItems: { items: { nombre: string }[] }[] }) =>
+      s.categoriasConItems.flatMap((c) => c.items.map((i) => i.nombre))
+    );
+    expect(nombresOcultos).not.toContain("Ensalada Cesar");
 
     // ...y la vuelve a mostrar (otros tests/archivos comparten esta misma base
     // de datos de pruebas y esperan que la carta 1 esté visible).
     const vuelta = await agent.post("/admin/cartas/1/toggle").type("form").send({ csrfToken: csrf });
     expect(vuelta.status).toBe(302);
 
-    const publicaDeVuelta = await agent.get("/restaurante/1");
-    expect(publicaDeVuelta.text).toContain("Ensalada Cesar");
+    const publicaDeVuelta = await agent.get("/api/restaurantes/africarestobar");
+    const nombresDeVuelta = publicaDeVuelta.body.secciones.flatMap(
+      (s: { categoriasConItems: { items: { nombre: string }[] }[] }) =>
+        s.categoriasConItems.flatMap((c) => c.items.map((i) => i.nombre))
+    );
+    expect(nombresDeVuelta).toContain("Ensalada Cesar");
   });
 });
