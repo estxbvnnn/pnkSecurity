@@ -50,7 +50,7 @@ export async function obtenerRestaurantePorSlug(slug: string): Promise<Restauran
 /** Todos los restaurantes con sus datos completos (+ dirección), para la tabla de gestión. */
 export async function listarRestaurantesAdmin(): Promise<RestauranteAdmin[]> {
   const { rows } = await pool.query<RestauranteAdmin>(
-    `SELECT r.id, r.rut, r.nombre, r.fono, r.email, r.foto,
+    `SELECT r.id, r.slug, r.rut, r.nombre, r.fono, r.email, r.foto,
             r.direccion_id AS "direccionId", d.calle, d.numero, d.comuna, d.region
        FROM restaurantes r
        JOIN direcciones d ON d.id = r.direccion_id

@@ -23,7 +23,7 @@
         <option value="<%= r.id %>" <%= r.id === restauranteId ? 'selected' : '' %>><%= r.nombre %></option>
       <% }); %>
     </select>
-    <a class="btn btn-sm btn-outline-light" href="/restaurante/<%= restauranteId %>">
+    <a class="btn btn-sm btn-outline-light" href="/<%= restaurante.slug %>">
       <i class="ti-eye"></i> Ver Carta Pública
     </a>
     <a class="btn btn-sm btn-outline-light" href="/admin/restaurantes">

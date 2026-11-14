@@ -22,6 +22,7 @@ export interface RestauranteResumen {
 /** Vista admin: todos los campos propios + los de su dirección, para editar. */
 export interface RestauranteAdmin {
   id: number;
+  slug: string;
   rut: string;
   nombre: string;
   fono: string;
