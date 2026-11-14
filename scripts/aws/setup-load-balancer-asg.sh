@@ -162,6 +162,12 @@ PGUSER=carta_app
 PGPASSWORD=$DB_PASSWORD
 SESSION_SECRET=$SESSION_SECRET
 ENVEOF
+# docker-compose.yml tambien define los servicios de Desarrollo/QA, que
+# usan .env.dev/.env.qa via "env_file:" -- "docker compose" valida el
+# archivo COMPLETO al arrancar, aunque solo se pida levantar app-prod, asi
+# que si esos archivos no existen falla igual. Alcanza con que existan
+# (no hace falta que tengan contenido real, esos servicios nunca arrancan).
+touch .env.dev .env.qa
 docker compose up -d --build app-prod
 USERDATA
 
