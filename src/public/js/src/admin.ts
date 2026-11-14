@@ -35,11 +35,24 @@
       select.addEventListener("change", () => select.form?.submit());
     });
 
-    // --- Selector de restaurante (dashboard): navega a /admin/:id (ruta
-    // limpia, sin ?id= en la URL). ---
+    // --- Selector de restaurante (dashboard): /admin/:id solo cambia el
+    // restaurante activo en la sesión y redirige a /admin — nunca debe
+    // quedar visible en la barra de direcciones ni abrirse como página
+    // propia. Por eso se pega en segundo plano con fetch() (que sigue el
+    // redirect solo) y recién después se navega a la URL limpia /admin. ---
     document.querySelectorAll<HTMLSelectElement>(".selector-restaurante-path").forEach((select) => {
-      select.addEventListener("change", () => {
-        window.location.href = `/admin/${select.value}`;
+      let valorActual = select.value;
+      select.addEventListener("change", async () => {
+        const nuevoValor = select.value;
+        try {
+          const res = await fetch(`/admin/${nuevoValor}`, { credentials: "same-origin" });
+          if (!res.ok) throw new Error("No se pudo cambiar de restaurante.");
+          valorActual = nuevoValor;
+          window.location.href = "/admin";
+        } catch {
+          select.value = valorActual;
+          Swal.fire({ icon: "error", title: "No se pudo cambiar de restaurante", text: "Probá de nuevo en unos segundos." });
+        }
       });
     });
 

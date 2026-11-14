@@ -61,28 +61,39 @@ const RATE_LIMITS = {
 
 export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const clientIp = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
+    // Cualquier excepción no capturada acá se muestra al visitante como un
+    // error genérico de Cloudflare (1101), sin pista de qué pasó. Se envuelve
+    // todo el handler para que, pase lo que pase, siempre vuelva una
+    // respuesta HTTP normal en vez de romper la petición.
+    try {
+      const url = new URL(request.url);
+      const clientIp = request.headers.get("CF-Connecting-IP") || "0.0.0.0";
 
-    if (await matchesWaf(request, url)) {
-      return new Response("Bloqueado por el WAF: patrón sospechoso detectado.", {
-        status: 403,
+      if (await matchesWaf(request, url)) {
+        return new Response("Bloqueado por el WAF: patrón sospechoso detectado.", {
+          status: 403,
+        });
+      }
+
+      const userAgent = request.headers.get("User-Agent") || "";
+      if (SCANNER_UA_PATTERNS.some((p) => p.test(userAgent))) {
+        return new Response("Acceso bloqueado.", { status: 403 });
+      }
+
+      if (await isRateLimited(env, clientIp, url.pathname)) {
+        return new Response("Demasiadas peticiones. Intenta de nuevo en unos segundos.", {
+          status: 429,
+          headers: { "Retry-After": "60" },
+        });
+      }
+
+      return await proxyToOrigin(request, url);
+    } catch (err) {
+      console.error("security-proxy: excepción no controlada", err);
+      return new Response("Error temporal del proxy. Probá de nuevo en unos segundos.", {
+        status: 502,
       });
     }
-
-    const userAgent = request.headers.get("User-Agent") || "";
-    if (SCANNER_UA_PATTERNS.some((p) => p.test(userAgent))) {
-      return new Response("Acceso bloqueado.", { status: 403 });
-    }
-
-    if (await isRateLimited(env, clientIp, url.pathname)) {
-      return new Response("Demasiadas peticiones. Intenta de nuevo en unos segundos.", {
-        status: 429,
-        headers: { "Retry-After": "60" },
-      });
-    }
-
-    return proxyToOrigin(request, url);
   },
 };
 
@@ -140,6 +151,15 @@ async function proxyToOrigin(request, url) {
   }
 
   const originResponse = await fetch(targetUrl, init);
+
+  // Con redirect:"manual", si el status no es un 3xx válido para construir
+  // una Response (ej. viene como 0/opaco), se arma el redirect a mano a
+  // partir del header Location en vez de reintentar copiar status/headers
+  // tal cual (eso es lo que tira la excepción que termina en error 1101).
+  const location = originResponse.headers.get("location");
+  if (location && (originResponse.status < 200 || originResponse.status > 599)) {
+    return Response.redirect(new URL(location, targetUrl).toString(), 302);
+  }
 
   const responseHeaders = new Headers(originResponse.headers);
   responseHeaders.delete("content-encoding");
