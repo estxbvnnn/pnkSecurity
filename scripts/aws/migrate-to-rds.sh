@@ -71,7 +71,7 @@ if aws rds describe-db-instances --region "$REGION" --db-instance-identifier "$D
 else
   aws rds create-db-instance --region "$REGION" \
     --db-instance-identifier "$DB_INSTANCE_ID" \
-    --engine postgres --engine-version 17.2 \
+    --engine postgres --engine-version 17.11 \
     --db-instance-class "$INSTANCE_CLASS" \
     --allocated-storage "$ALLOCATED_STORAGE" \
     --master-username "$DB_MASTER_USER" \
