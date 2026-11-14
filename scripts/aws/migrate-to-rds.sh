@@ -62,6 +62,10 @@ aws rds describe-db-subnet-groups --region "$REGION" --db-subnet-group-name "${N
     --subnet-ids $SUBNET_IDS >/dev/null
 
 echo "== Creando la instancia RDS (tarda varios minutos) =="
+# --multi-az es una bandera booleana en aws-cli (--multi-az / --no-multi-az),
+# no un parametro que reciba "true"/"false" como valor.
+if [ "$MULTI_AZ" = "true" ]; then MULTI_AZ_FLAG="--multi-az"; else MULTI_AZ_FLAG="--no-multi-az"; fi
+
 if aws rds describe-db-instances --region "$REGION" --db-instance-identifier "$DB_INSTANCE_ID" >/dev/null 2>&1; then
   echo "  (la instancia RDS ya existe, no la recreo)"
 else
@@ -75,7 +79,7 @@ else
     --vpc-security-group-ids "$RDS_SG_ID" \
     --db-subnet-group-name "${NAME_PREFIX}-subnet-group" \
     --no-publicly-accessible \
-    --multi-az "$MULTI_AZ" \
+    "$MULTI_AZ_FLAG" \
     --backup-retention-period 7 \
     --storage-type gp3 >/dev/null
 fi
