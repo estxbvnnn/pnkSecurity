@@ -41,9 +41,12 @@ set -euo pipefail
 # ------------------------------------------------------------------ Config
 REGION="${REGION:-us-east-1}"
 VPC_ID="${VPC_ID:-vpc-0952f484a5b3e1941}"
-EXISTING_INSTANCE_ID="${EXISTING_INSTANCE_ID:-i-0d0ad13d0090db9ac}"   # 52.0.165.26, sigue siendo la BD
+EXISTING_INSTANCE_ID="${EXISTING_INSTANCE_ID:-i-0d0ad13d0090db9ac}"   # 52.0.165.26
 EXISTING_SG_ID="${EXISTING_SG_ID:-sg-014388a03158936ad}"
-DB_PRIVATE_IP="${DB_PRIVATE_IP:-172.31.27.117}"
+# La base de datos ya no vive en la instancia principal -- migrada a RDS
+# (ver scripts/aws/migrate-to-rds.sh). Borrar la instancia principal ya NO
+# afecta a la base de datos.
+DB_HOST="${DB_HOST:-carta-digital-db.cbeyymw84rq1.us-east-1.rds.amazonaws.com}"
 AMI_ID="${AMI_ID:-ami-0567589d25e06853e}"                              # misma AMI que la instancia actual (Amazon Linux 2023)
 INSTANCE_TYPE="${INSTANCE_TYPE:-t3.micro}"
 KEY_NAME="${KEY_NAME:-test}"                                           # nombre del key pair en AWS -- verificar/ajustar
@@ -93,10 +96,9 @@ if [ "$APP_SG_ID" = "None" ] || [ -z "$APP_SG_ID" ]; then
 fi
 echo "APP_SG_ID=$APP_SG_ID"
 
-echo "== Abriendo 5432 (Postgres) en la instancia actual, solo para el security group de la app =="
-aws ec2 authorize-security-group-ingress --region "$REGION" --group-id "$EXISTING_SG_ID" \
-  --protocol tcp --port 5432 --source-group "$APP_SG_ID" 2>/dev/null || \
-  echo "  (ya estaba abierto, sigo)"
+# Ya no hace falta abrir 5432 en la instancia principal -- la base de datos
+# vive en RDS (ver scripts/aws/migrate-to-rds.sh), que tiene su propio
+# security group.
 
 # --------------------------------------------------- 3) Target Group
 echo "== Target Group (HTTP:80, healthcheck /health) =="
@@ -155,7 +157,7 @@ cd /opt/carta-digital
 cat > .env.prod <<ENVEOF
 NODE_ENV=production
 PORT=80
-PGHOST=$DB_PRIVATE_IP
+PGHOST=$DB_HOST
 PGPORT=5432
 PGDATABASE=carta_digital
 PGUSER=carta_app
