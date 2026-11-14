@@ -1,55 +1,581 @@
 /**
- * El frontend público reutiliza el look&feel original del proyecto
- * (Bootstrap + themify-icons + src/public/css/style.css + custom.css,
- * cargados desde frontend/index.html — ver ese archivo). Esta hoja solo
- * agrega lo que la SPA necesita y el sitio EJS original no tenía: toasts,
- * el modal de login, el badge del carrito y un par de estados de carga.
- * Reusa la misma paleta (#e22104 / #2f2d4e / #0a0252 / #f0e9ff).
+ * Remaster del sitio público: mismo lenguaje de marca que el diseño
+ * original (rojo #e22104, navy #0a0252/#2f2d4e, Josefin Sans/Open Sans,
+ * que siguen viniendo de /css/style.css), pero con una gramática visual
+ * más profesional inspirada en paneles de producto tipo SaaS: tarjetas
+ * blancas sobre fondo gris-azulado, bordes sutiles, badges tipo pill,
+ * filas de datos con ícono y una jerarquía de botones clara
+ * (primario relleno / fantasma con borde).
  */
+
+:root {
+  --bg: #eef1f7;
+  --surface: #ffffff;
+  --border: #e3e8f2;
+  --text: #1f2430;
+  --text-muted: #6b7280;
+  --brand: #e22104;
+  --brand-dark: #c21c00;
+  --navy: #0a0252;
+  --navy-soft: #2f2d4e;
+  --radius: 14px;
+  --sombra: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --sombra-hover: 0 10px 24px rgba(16, 24, 40, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
+  background: var(--bg) !important;
+  background-image: none !important;
+  color: var(--text) !important;
+}
+
+a {
+  color: inherit;
 }
 
 .main {
-  min-height: 60vh;
+  min-height: 70vh;
+  padding-bottom: 48px;
 }
 
-/* --- Barra pública (Header) --- */
-.navbar-publica .navbar-brand {
+.contenedor {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.seccion {
+  padding: 36px 0;
+}
+
+.titulo-pagina {
+  font-family: "Josefin Sans", sans-serif;
+  color: var(--navy-soft);
+  margin-bottom: 20px;
+}
+
+/* --- Barra superior --- */
+.barra-publica {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.barra-publica__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 0;
+}
+
+.barra-publica__marca {
   font-family: "Josefin Sans", sans-serif;
   font-weight: 700;
-  color: #2f2d4e;
+  font-size: 19px;
+  color: var(--navy-soft);
+  text-decoration: none;
+}
+
+.barra-publica__acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.barra-publica__saludo {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .carrito-link {
   position: relative;
-  font-size: 22px;
-  color: #2f2d4e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--navy-soft);
+  font-size: 17px;
 }
 
 .carrito-link:hover {
-  color: #e22104;
+  background: #e4e9f5;
 }
 
 .carrito-badge {
   position: absolute;
   top: -6px;
-  right: -10px;
-  background: #e22104;
+  right: -6px;
+  background: var(--brand);
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  padding: 2px 6px;
-  border-radius: 10px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface);
 }
 
-/* --- Modal de login (mismo estilo que #formlogin del sitio original) --- */
+/* --- Botones --- */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  line-height: 1.1;
+}
+
+.boton:active {
+  transform: scale(0.98);
+}
+
+.boton--primario {
+  background: var(--navy);
+  color: #fff;
+}
+
+.boton--primario:hover {
+  background: var(--navy-soft);
+  color: #fff;
+}
+
+.boton--marca {
+  background: var(--brand);
+  color: #fff;
+}
+
+.boton--marca:hover {
+  background: var(--brand-dark);
+  color: #fff;
+}
+
+.boton--fantasma {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.boton--fantasma:hover {
+  background: var(--bg);
+}
+
+.boton--peligro {
+  background: var(--surface);
+  color: var(--brand-dark);
+  border-color: #f4cec6;
+}
+
+.boton--peligro:hover {
+  background: #fdf1ef;
+}
+
+.boton--bloque {
+  width: 100%;
+}
+
+.boton--chico {
+  padding: 7px 13px;
+  font-size: 12.5px;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- Badges tipo pill --- */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge-pill--marca {
+  background: #fdeae4;
+  color: var(--brand-dark);
+}
+
+.badge-pill--neutro {
+  background: #eef0f6;
+  color: var(--text-muted);
+}
+
+/* --- Tarjetas (restaurantes, destacados) --- */
+.grilla-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.tarjeta {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.tarjeta:hover {
+  box-shadow: var(--sombra-hover);
+  transform: translateY(-3px);
+}
+
+.tarjeta--destacada {
+  border-color: #f4bdae;
+}
+
+.tarjeta__foto-wrap {
+  aspect-ratio: 4 / 3;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.tarjeta__foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tarjeta__cuerpo {
+  padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.tarjeta__titulo-fila {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tarjeta__titulo-fila h3,
+.tarjeta__titulo-fila h4 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+  font-family: "Josefin Sans", sans-serif;
+}
+
+.tarjeta__descripcion {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fila-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.fila-info i {
+  color: #9aa3b4;
+  width: 14px;
+  text-align: center;
+}
+
+.precio {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  font-family: "Open Sans", sans-serif;
+  white-space: nowrap;
+}
+
+.tarjeta__acciones {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+/* --- Tabs de carta (pastillas en vez de nav-tabs clásico) --- */
+.tabs-carta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.tab-pastilla {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.tab-pastilla.activa {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+/* --- Portada del restaurante --- */
+.portada-restaurante {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 0;
+}
+
+.portada-restaurante__fila {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.portada-restaurante__foto {
+  width: 84px;
+  height: 84px;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.portada-restaurante__datos h1 {
+  font-family: "Josefin Sans", sans-serif;
+  color: var(--navy-soft);
+  font-size: 26px;
+  margin: 0 0 6px;
+}
+
+.portada-restaurante__filas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.portada-restaurante__acciones {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --- Categorías de la carta --- */
+.categoria-bloque {
+  margin-bottom: 30px;
+}
+
+.categoria-bloque h2,
+.categoria-bloque h3 {
+  font-family: "Josefin Sans", sans-serif;
+  color: var(--navy-soft);
+  font-size: 19px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* --- Comentarios --- */
+.caja-comentarios {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-top: 10px;
+}
+
+.caja-comentarios textarea,
+.caja-comentarios input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  margin-bottom: 10px;
+  background: var(--bg);
+}
+
+.lista-comentarios {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista-comentarios li {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+}
+
+.lista-comentarios strong {
+  color: var(--navy-soft);
+}
+
+/* --- Carrito --- */
+.lista-carrito {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista-carrito li {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lista-carrito__nombre {
+  font-weight: 600;
+  margin: 0;
+}
+
+.lista-carrito__restaurante {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 2px 0 0;
+}
+
+.lista-carrito__derecha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aviso-franja {
+  background: #fff6ea;
+  border: 1px solid #f3e0b3;
+  color: #8a6a1b;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.resumen-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.resumen-total strong {
+  font-size: 19px;
+  color: var(--navy);
+}
+
+/* --- Confirmación de pedido --- */
+.confirmacion {
+  max-width: 420px;
+  margin: 40px auto;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 26px;
+  box-shadow: var(--sombra);
+}
+
+.confirmacion__icono {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #e7f8ef;
+  color: #1a7d42;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmacion__pedido {
+  border-top: 1px dashed var(--border);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.confirmacion__restaurante {
+  font-weight: 600;
+  color: var(--navy-soft);
+  margin-bottom: 2px;
+}
+
+.confirmacion__total {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+/* --- Modal de login --- */
 .modal-fondo {
   position: fixed;
   inset: 0;
-  background: rgba(10, 2, 82, 0.45);
+  background: rgba(15, 18, 30, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,26 +587,30 @@ body {
   position: relative;
   width: 100%;
   max-width: 380px;
-  background-color: #e3ecf5;
-  border: 1px solid #4da9ff;
-  border-radius: 10px;
-  box-shadow: 10px 10px 5px -5px rgba(112, 131, 255, 1);
-  padding: 30px 25px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--sombra-hover);
+  padding: 30px 26px 24px;
 }
 
 .modal-cerrar {
   position: absolute;
-  top: 10px;
-  right: 12px;
-  background: none;
+  top: 12px;
+  right: 14px;
+  background: var(--bg);
   border: none;
-  font-size: 18px;
-  color: #2f2d4e;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--text);
   cursor: pointer;
 }
 
 .modal-caja h2 {
-  font-size: 22px;
+  font-family: "Josefin Sans", sans-serif;
+  font-size: 20px;
+  color: var(--navy-soft);
   margin-bottom: 18px;
 }
 
@@ -90,45 +620,53 @@ body {
 
 .campo label {
   display: block;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #2f2d4e;
-  margin-bottom: 4px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
 }
 
 .campo input {
   width: 100%;
   height: 42px;
   padding: 0 12px;
-  border: 1px solid #c7d6ea;
-  border-radius: 6px;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
   font-size: 14px;
 }
 
 .campo-error {
-  color: #e22104;
+  color: var(--brand-dark);
   font-size: 13px;
   margin-bottom: 12px;
 }
 
 .texto-ayuda {
   font-size: 13px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 /* --- Estados de carga / vacío --- */
 .estado-vacio {
   text-align: center;
-  color: #999;
+  color: var(--text-muted);
   padding: 40px 0;
 }
 
+.estado-vacio-tarjeta {
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 20px;
+}
+
 .skeleton {
-  background: linear-gradient(90deg, #f0e9ff 25%, #e4dcff 37%, #f0e9ff 63%);
+  background: linear-gradient(90deg, #e7eaf2 25%, #dde1ec 37%, #e7eaf2 63%);
   background-size: 400% 100%;
   animation: brillo-skeleton 1.4s ease infinite;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 @keyframes brillo-skeleton {
@@ -138,48 +676,6 @@ body {
   100% {
     background-position: 0 50%;
   }
-}
-
-/* --- Confirmación de pedido --- */
-.confirmacion {
-  max-width: 420px;
-  margin: 40px auto;
-  text-align: center;
-  background: #fff8f7;
-  border: 1px solid #f0e9ff;
-  border-radius: 10px;
-  padding: 35px 25px;
-}
-
-.confirmacion__icono {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 15px;
-  border-radius: 50%;
-  background: #0a0252;
-  color: #fff;
-  font-size: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.confirmacion__pedido {
-  border-top: 1px solid #f0e9ff;
-  padding-top: 12px;
-  margin-top: 12px;
-}
-
-.confirmacion__restaurante {
-  font-weight: 600;
-  color: #2f2d4e;
-  margin-bottom: 2px;
-}
-
-.confirmacion__total {
-  font-size: 20px;
-  font-weight: 700;
-  color: #0a0252;
 }
 
 /* --- Toasts --- */
@@ -197,20 +693,27 @@ body {
   min-width: 220px;
   max-width: 320px;
   padding: 12px 16px;
-  border-radius: 6px;
+  border-radius: 10px;
   color: #fff;
-  font-size: 14px;
-  box-shadow: 0 6px 20px rgba(10, 2, 82, 0.25);
+  font-size: 13.5px;
+  box-shadow: var(--sombra-hover);
 }
 
 .toast--exito {
-  background: #0a0252;
+  background: var(--navy);
 }
 
 .toast--error {
-  background: #e22104;
+  background: var(--brand-dark);
 }
 
 .toast--info {
-  background: #2f2d4e;
+  background: var(--navy-soft);
+}
+
+@media (max-width: 640px) {
+  .portada-restaurante__acciones {
+    margin-left: 0;
+    width: 100%;
+  }
 }

@@ -29,7 +29,7 @@ export function Carrito(): JSX.Element {
 
   if (pedidosConfirmados) {
     return (
-      <div className="container">
+      <div className="contenedor seccion">
         <div className="confirmacion">
           <div className="confirmacion__icono">
             <i className="ti-check" />
@@ -44,8 +44,10 @@ export function Carrito(): JSX.Element {
               <p className="confirmacion__total">{formatearCLP(p.total)}</p>
             </div>
           ))}
-          <p className="texto-ayuda mt-2">Avisale al garzón tu número de pedido para que lo prepare.</p>
-          <Link to="/" className="button mt-2 d-inline-block">
+          <p className="texto-ayuda" style={{ margin: "14px 0" }}>
+            Avisale al garzón tu número de pedido para que lo prepare.
+          </p>
+          <Link to="/" className="boton boton--primario">
             Volver al inicio
           </Link>
         </div>
@@ -55,95 +57,73 @@ export function Carrito(): JSX.Element {
 
   if (cargando) {
     return (
-      <div className="container my-4">
-        <div className="skeleton" style={{ height: 200 }} />
+      <div className="contenedor seccion">
+        <div className="skeleton" style={{ height: 220 }} />
       </div>
     );
   }
 
   return (
-    <div>
-      <section>
-        <div className="container contendor">
-          <div className="row">
-            <div className="col-lg-12 d-flex justify-content-between align-items-center">
-              <img className="logosintituciones" src="/img/logo.png" width="170" alt="" />
-              <div>
-                <Link className="btn btn-primary" to="/">
-                  Volver a la Carta
-                </Link>
-                {items.length > 0 && (
-                  <button className="btn btn-secondary ms-2" onClick={() => vaciar()}>
-                    Eliminar Todo
+    <div className="contenedor seccion" style={{ maxWidth: 680 }}>
+      <h1 className="titulo-pagina">Tu carrito</h1>
+
+      {items.length === 0 ? (
+        <div className="estado-vacio-tarjeta">
+          <p className="estado-vacio" style={{ padding: 0, marginBottom: 14 }}>
+            Tu carrito está vacío.
+          </p>
+          <Link to="/" className="boton boton--primario">
+            Ver restaurantes
+          </Link>
+        </div>
+      ) : (
+        <>
+          <ul className="lista-carrito">
+            {items.map((item) => (
+              <li key={item.posicion}>
+                <div>
+                  <p className="lista-carrito__nombre">{item.nombre}</p>
+                  <p className="lista-carrito__restaurante">{item.restauranteNombre}</p>
+                </div>
+                <div className="lista-carrito__derecha">
+                  <span className="precio">{formatearCLP(item.precio)}</span>
+                  <button
+                    className="boton boton--peligro boton--chico"
+                    onClick={() => eliminar(item.posicion)}
+                    aria-label={`Quitar ${item.nombre}`}
+                  >
+                    <i className="ti-trash" />
                   </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-      <section>
-        <div className="container contendor">
-          <h4 className="text-center">Productos Agregados para Solicitar</h4>
-
-          {items.length === 0 ? (
-            <h5 className="text-center text-muted">Tu carrito está vacío.</h5>
-          ) : (
-            <>
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Código</th>
-                    <th>Producto</th>
-                    <th>Restaurante</th>
-                    <th>Precio</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.posicion}>
-                      <td>{item.id}</td>
-                      <td>{item.nombre}</td>
-                      <td>{item.restauranteNombre}</td>
-                      <td>{formatearCLP(item.precio)}</td>
-                      <td>
-                        <a
-                          href="#"
-                          className="text-danger"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            eliminar(item.posicion);
-                          }}
-                        >
-                          <i className="ti-trash" />
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {restaurantesDistintos.length > 1 && (
-                <p className="text-center text-muted">
-                  Tu carrito tiene productos de {restaurantesDistintos.length} restaurantes distintos (
-                  {restaurantesDistintos.join(", ")}) — se van a confirmar como pedidos separados, uno por restaurante.
-                </p>
-              )}
-
-              <h3 className="text-center">Total: {formatearCLP(total)}</h3>
-
-              <div className="text-center">
-                <button className="btn btn-success btn-lg" onClick={handleConfirmar} disabled={confirmando}>
-                  {confirmando ? "Confirmando..." : "✅ Confirmar Pedido"}
-                </button>
-              </div>
-              <p className="text-center text-muted mt-2">o avísale directamente al garzón para solicitarlo.</p>
-            </>
+          {restaurantesDistintos.length > 1 && (
+            <p className="aviso-franja">
+              Tu carrito tiene productos de {restaurantesDistintos.length} restaurantes distintos (
+              {restaurantesDistintos.join(", ")}) — se van a confirmar como pedidos separados, uno por restaurante.
+            </p>
           )}
-        </div>
-      </section>
+
+          <div className="resumen-total">
+            <span>Total</span>
+            <strong>{formatearCLP(total)}</strong>
+          </div>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button className="boton boton--fantasma" onClick={() => vaciar()}>
+              Vaciar carrito
+            </button>
+            <button className="boton boton--primario boton--bloque" onClick={handleConfirmar} disabled={confirmando}>
+              {confirmando ? "Confirmando..." : "Confirmar pedido"}
+            </button>
+          </div>
+          <p className="texto-ayuda" style={{ textAlign: "center", marginTop: 12 }}>
+            o avisale directamente al garzón para solicitarlo.
+          </p>
+        </>
+      )}
     </div>
   );
 }

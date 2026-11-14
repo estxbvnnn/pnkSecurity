@@ -15,54 +15,56 @@ export function Listado(): JSX.Element {
   }, []);
 
   return (
-    <section>
-      <div className="container contendor my-4">
-        <div className="text-center mb-4">
-          <img className="logosintituciones" src="/img/logo.png" width="190" alt="" />
-          <h3 className="mt-3">Elige un restaurante</h3>
-        </div>
+    <div className="contenedor seccion">
+      <h1 className="titulo-pagina">Elegí un restaurante</h1>
 
-        {error && <p className="estado-vacio">No se pudo cargar el listado de restaurantes. Probá de nuevo más tarde.</p>}
+      {error && <p className="estado-vacio">No se pudo cargar el listado de restaurantes. Probá de nuevo más tarde.</p>}
 
-        <div className="row">
-          {!restaurantes &&
-            !error &&
-            Array.from({ length: 6 }).map((_, i) => (
-              <div className="col-lg-4 col-md-6 mb-4" key={i}>
-                <div className="featured-item h-100 text-center p-3">
-                  <div className="skeleton mb-2" style={{ width: 140, height: 140, margin: "0 auto" }} />
-                  <div className="skeleton" style={{ height: 20, width: "70%", margin: "0 auto" }} />
-                </div>
+      {!restaurantes && !error && (
+        <div className="grilla-tarjetas">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="tarjeta">
+              <div className="skeleton tarjeta__foto-wrap" />
+              <div className="tarjeta__cuerpo">
+                <div className="skeleton" style={{ height: 18, width: "70%" }} />
               </div>
-            ))}
-
-          {restaurantes &&
-            restaurantes.map((r) => {
-              const foto = fotoUrl(r.id, r.foto);
-              return (
-                <div className="col-lg-4 col-md-6 mb-4" key={r.id}>
-                  <Link className="text-decoration-none" to={`/${r.slug}`}>
-                    <div className="featured-item h-100 text-center p-3">
-                      <img
-                        className="card-img rounded-0 mb-2"
-                        width="140"
-                        height="140"
-                        style={{ objectFit: "contain" }}
-                        src={foto ?? "/img/logo_empresa_comodin.png"}
-                        alt=""
-                      />
-                      <h5>{r.nombre}</h5>
-                    </div>
-                  </Link>
-                </div>
-              );
-            })}
+            </div>
+          ))}
         </div>
+      )}
 
-        {restaurantes && restaurantes.length === 0 && (
-          <p className="text-center text-muted">No hay restaurantes disponibles todavía.</p>
-        )}
-      </div>
-    </section>
+      {restaurantes && restaurantes.length === 0 && (
+        <p className="estado-vacio">Todavía no hay restaurantes publicados.</p>
+      )}
+
+      {restaurantes && restaurantes.length > 0 && (
+        <div className="grilla-tarjetas">
+          {restaurantes.map((r) => {
+            const foto = fotoUrl(r.id, r.foto);
+            return (
+              <Link to={`/${r.slug}`} key={r.id} className="tarjeta">
+                <div className="tarjeta__foto-wrap">
+                  {foto ? (
+                    <img src={foto} alt={r.nombre} className="tarjeta__foto" loading="lazy" />
+                  ) : (
+                    <div className="tarjeta__foto" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <i className="ti-home" style={{ fontSize: 28, color: "#c3c9d6" }} />
+                    </div>
+                  )}
+                </div>
+                <div className="tarjeta__cuerpo">
+                  <div className="tarjeta__titulo-fila">
+                    <h3>{r.nombre}</h3>
+                  </div>
+                  <div className="tarjeta__acciones">
+                    <span className="boton boton--primario boton--bloque">Ver carta →</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

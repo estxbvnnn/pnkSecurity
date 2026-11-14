@@ -17,29 +17,29 @@ export function Header(): JSX.Element {
   }
 
   return (
-    <nav className="navbar navbar-light bg-light navbar-publica">
-      <div className="container d-flex justify-content-between align-items-center flex-wrap">
-        <Link to="/" className="navbar-brand">
+    <header className="barra-publica">
+      <div className="contenedor barra-publica__fila">
+        <Link to="/" className="barra-publica__marca">
           Carta Digital
         </Link>
 
-        <div className="d-flex align-items-center gap-3 flex-wrap">
+        <div className="barra-publica__acciones">
           {nombreUsuario ? (
-            <div className="d-flex align-items-center gap-2 flex-wrap">
-              <span>
+            <>
+              <span className="barra-publica__saludo">
                 <i className="ti-user" /> {nombreUsuario}
               </span>
               {esAdmin && (
-                <a className="btn btn-sm btn-outline-dark" href="/admin">
-                  Administrar Carta
+                <a className="boton boton--fantasma boton--chico" href="/admin">
+                  Panel admin
                 </a>
               )}
-              <button className="btn btn-sm btn-outline-secondary" onClick={cerrarSesion}>
+              <button className="boton boton--fantasma boton--chico" onClick={cerrarSesion}>
                 Cerrar sesión
               </button>
-            </div>
+            </>
           ) : (
-            <button className="btn btn-sm btn-outline-primary" onClick={() => setMostrarLogin(true)}>
+            <button className="boton boton--fantasma boton--chico" onClick={() => setMostrarLogin(true)}>
               Ingresar
             </button>
           )}
@@ -52,6 +52,6 @@ export function Header(): JSX.Element {
       </div>
 
       {mostrarLogin && <LoginModal onCerrar={() => setMostrarLogin(false)} />}
-    </nav>
+    </header>
   );
 }

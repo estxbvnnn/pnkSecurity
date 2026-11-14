@@ -69,14 +69,16 @@ export function LoginModal({ onCerrar }: { onCerrar: () => void }): JSX.Element 
               />
             </div>
             {error && <p className="campo-error">{error}</p>}
-            <button type="submit" className="button" disabled={enviando} style={{ width: "100%", border: 0 }}>
+            <button type="submit" className="boton boton--primario boton--bloque" disabled={enviando}>
               {enviando ? "Entrando..." : "Entrar"}
             </button>
           </form>
         ) : (
           <form onSubmit={enviar2fa}>
             <h2>Verificación en dos pasos</h2>
-            <p className="texto-ayuda">Ingresá el código de tu app de autenticación.</p>
+            <p className="texto-ayuda" style={{ marginBottom: 14 }}>
+              Ingresá el código de tu app de autenticación.
+            </p>
             <div className="campo">
               <label htmlFor="login-2fa">Código</label>
               <input
@@ -89,7 +91,7 @@ export function LoginModal({ onCerrar }: { onCerrar: () => void }): JSX.Element 
               />
             </div>
             {error && <p className="campo-error">{error}</p>}
-            <button type="submit" className="button" disabled={enviando} style={{ width: "100%", border: 0 }}>
+            <button type="submit" className="boton boton--primario boton--bloque" disabled={enviando}>
               {enviando ? "Verificando..." : "Verificar"}
             </button>
           </form>
