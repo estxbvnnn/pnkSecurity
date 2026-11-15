@@ -88,21 +88,48 @@ pipeline {
       // Este Job apunta siempre a la rama carta-digital-nodejs (configurado
       // en la definición del Job, ver create-job.groovy) — no es un job
       // Multibranch, así que no existe BRANCH_NAME para filtrar por "when".
+      //
+      // Producción ya no es una sola instancia fija: vive detrás de un
+      // Load Balancer + Auto Scaling Group (ver scripts/aws/), y cada
+      // instancia nueva se autoconfigura sola al arrancar (clona la rama y
+      // levanta el contenedor via el user-data del Launch Template) -- no
+      // hace falta que Jenkins le empuje el codigo por SSH.
+      //
+      // PROD_HOST sigue existiendo solo como instancia "legacy" opcional
+      // (si existe, se actualiza de paso); si no existe o no responde
+      // (puede estar apagada/eliminada, ej. en un Learner Lab de AWS
+      // Academy que se reinicia), este paso queda en amarillo (unstable)
+      // en vez de hacer fallar todo el pipeline -- el despliegue real a
+      // las instancias del Auto Scaling Group se hace reemplazandolas con
+      // scripts/aws/runbook.sh (ver docs/infraestructura-load-balancer-auto-scaling.md).
       steps {
-        sshagent(credentials: ['prod-server-ssh']) {
-          sh '''
-            ssh -o StrictHostKeyChecking=accept-new ec2-user@${PROD_HOST} '
-              set -e
-              cd ~/carta-digital-node
-              git fetch origin carta-digital-nodejs
-              git reset --hard origin/carta-digital-nodejs
-              sudo docker compose build app-prod
-              sudo docker compose up -d app-prod
-              sleep 10
-              sudo docker compose ps app-prod
-              curl -sf http://127.0.0.1/health
-            '
-          '''
+        script {
+          def resultado = 1
+          sshagent(credentials: ['prod-server-ssh']) {
+            resultado = sh(
+              returnStatus: true,
+              script: '''
+                timeout 30 ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 ec2-user@${PROD_HOST} '
+                  set -e
+                  cd ~/carta-digital-node
+                  git fetch origin carta-digital-nodejs
+                  git reset --hard origin/carta-digital-nodejs
+                  sudo docker compose build app-prod
+                  sudo docker compose up -d app-prod
+                  sleep 10
+                  sudo docker compose ps app-prod
+                  curl -sf http://127.0.0.1/health
+                '
+              '''
+            )
+          }
+          if (resultado != 0) {
+            echo "PROD_HOST (${env.PROD_HOST}) no respondio -- no es un error del pipeline en si. " +
+                 "El despliegue real a las instancias del Auto Scaling Group se hace reemplazandolas " +
+                 "con scripts/aws/runbook.sh reemplazar-instancias (o terminate-instance-in-auto-scaling-group " +
+                 "si StartInstanceRefresh esta bloqueado por las politicas del lab)."
+            unstable("PROD_HOST no disponible -- ver scripts/aws/runbook.sh para desplegar al Auto Scaling Group")
+          }
         }
       }
     }
