@@ -5,6 +5,7 @@ import { fotoUrl, formatearCLP } from "../utils";
 import { useCarrito } from "../context/CartContext";
 import { useSesion } from "../context/SessionContext";
 import { useToast } from "../context/ToastContext";
+import { SelectorRestaurantes } from "../components/SelectorRestaurantes";
 
 function TarjetaDestacado({ item, restauranteId }: { item: Item; restauranteId: number }): JSX.Element {
   const { agregar } = useCarrito();
@@ -213,6 +214,7 @@ export function Carta(): JSX.Element {
 
   return (
     <div>
+      {slug && <SelectorRestaurantes slugActual={slug} />}
       <section
         className="portada-restaurante"
         style={fotoRestaurante ? { backgroundImage: `url(${fotoRestaurante})` } : undefined}
