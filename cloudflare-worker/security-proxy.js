@@ -13,13 +13,13 @@
 // Requiere un KV Namespace llamado RATE_LIMIT_KV enlazado en
 // Settings → Variables → KV Namespace Bindings (ver README.md).
 
-// IMPORTANTE: Workers no permite que fetch() apunte directo a una IP
-// literal (Cloudflare lo bloquea como "Error 1003: Direct IP Access Not
-// Allowed", abuso-prevención de su red). Por eso se usa el hostname
-// público que AWS asigna automáticamente a la IP elástica de la EC2
-// (resuelve exactamente a la misma IP, 52.0.165.26) en vez de la IP
-// cruda.
-const ORIGIN = "http://ec2-52-0-165-26.compute-1.amazonaws.com";
+// Apunta al Application Load Balancer (reparte entre la instancia principal
+// y las instancias del Auto Scaling Group) en vez de a una sola EC2 --
+// ver docs/infraestructura-load-balancer-auto-scaling.md. El DNS del ALB ya
+// es un hostname (no una IP literal), así que no hace falta el truco del
+// hostname de AWS que se usaba antes para esquivar el bloqueo de Workers a
+// fetch() con IPs crudas.
+const ORIGIN = "http://carta-digital-alb-66064109.us-east-1.elb.amazonaws.com";
 
 const SQLI_XSS_PATTERNS = [
   /union(\s|\/\*.*\*\/)+select/i,
